@@ -1,0 +1,145 @@
+import { Box, Circle, Flex, HStack, Text, VStack } from "@chakra-ui/react";
+import { eachMonthOfInterval, format, parse } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { useSearchParams } from "next/navigation";
+import React, { useMemo } from "react";
+import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
+
+interface MoneyFlowProps {
+  data?: {
+    month: string;
+    deposits: number;
+    withdrawals: number;
+  }[];
+}
+
+export function MoneyFlow({ data = [] }: MoneyFlowProps) {
+  const searchParams = useSearchParams();
+  const startDateParam = searchParams.get("startDate");
+  const endDateParam = searchParams.get("endDate");
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(value);
+  };
+
+  const parseDate = (dateString: string | null) => {
+    if (!dateString) return null;
+    try {
+      return parse(dateString, "dd/MM/yyyy", new Date());
+    } catch {
+      return null;
+    }
+  };
+
+  const formatDate = (date: Date | null) => {
+    if (!date) return "";
+    return format(date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+  };
+
+  const startDate =
+    parseDate(startDateParam) || new Date(new Date().getFullYear(), 0, 1);
+  const endDate = parseDate(endDateParam) || new Date();
+
+  const getDescription = () => {
+    return `Fluxo monetário do período de ${formatDate(startDate)} a ${formatDate(endDate)}`;
+  };
+
+  const chartData = useMemo(() => {
+    const months = eachMonthOfInterval({ start: startDate, end: endDate });
+    const emptyData = months.map((month) => ({
+      month: format(month, "MMM yyyy", { locale: ptBR }),
+      deposits: 0,
+      withdrawals: 0,
+    }));
+
+    if (data.length === 0) return emptyData;
+
+    return emptyData.map((emptyMonth) => {
+      const matchingMonth = data.find((d) => d.month === emptyMonth.month);
+      return matchingMonth || emptyMonth;
+    });
+  }, [data, startDate, endDate]);
+
+  return (
+    <Box
+      border="1px"
+      borderColor="gray.200"
+      borderRadius="lg"
+      p="6"
+      height="100%"
+      bg="white"
+      boxShadow="sm"
+    >
+      <Flex justifyContent="space-between" alignItems="flex-start" mb={6}>
+        <VStack align="start" spacing={1}>
+          <Text fontSize="2xl" fontWeight="bold">
+            Fluxo Monetário
+          </Text>
+          <Text fontSize="sm" color="gray.600">
+            {getDescription()}
+          </Text>
+        </VStack>
+        <HStack spacing={4}>
+          <HStack>
+            <Circle size="10px" bg="#48BB78" />
+            <Text fontSize="sm" color="#48BB78">
+              Receitas
+            </Text>
+          </HStack>
+          <HStack>
+            <Circle size="10px" bg="#F56565" />
+            <Text fontSize="sm" color="#F56565">
+              Despesas
+            </Text>
+          </HStack>
+        </HStack>
+      </Flex>
+      <ResponsiveContainer width="100%" height={400}>
+        <LineChart
+          data={chartData}
+          margin={{
+            top: 20,
+            right: 40,
+            left: 0,
+            bottom: 20,
+          }}
+        >
+          <XAxis dataKey="month" axisLine={false} tickLine={false} dy={10} />
+          <Tooltip
+            formatter={formatCurrency}
+            labelStyle={{ fontWeight: "bold" }}
+            contentStyle={{
+              borderRadius: "8px",
+              border: "none",
+              boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+            }}
+          />
+          <Line
+            type="monotone"
+            dataKey="deposits"
+            stroke="#48BB78"
+            strokeWidth={4}
+            dot={false}
+            name="Receitas"
+          />
+          <Line
+            type="monotone"
+            dataKey="withdrawals"
+            stroke="#F56565"
+            strokeWidth={4}
+            dot={false}
+            name="Despesas"
+          />
+        </LineChart>
+      </ResponsiveContainer>
+      {chartData.length === 0 && (
+        <Text textAlign="center" color="gray.500" mt={4}>
+          Nenhum dado disponível para o período selecionado.
+        </Text>
+      )}
+    </Box>
+  );
+}

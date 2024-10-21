@@ -4,14 +4,17 @@ import {
   Avatar,
   Box,
   Flex,
+  Icon,
   Menu,
   MenuButton,
   MenuItem,
   MenuList,
   Portal,
+  Skeleton,
+  SkeletonCircle,
   Text,
 } from "@chakra-ui/react";
-import { FiLogOut, FiUser } from "react-icons/fi";
+import { FiChevronDown, FiLogOut, FiUser } from "react-icons/fi";
 
 interface UserCardProps {
   name: string;
@@ -19,6 +22,7 @@ interface UserCardProps {
   avatarUrl?: string;
   onMyAccount: () => void;
   onLogout: () => void;
+  isLoading?: boolean;
 }
 
 export default function UserCard({
@@ -27,6 +31,7 @@ export default function UserCard({
   avatarUrl,
   onMyAccount,
   onLogout,
+  isLoading = false,
 }: UserCardProps) {
   return (
     <Menu placement="bottom-end" offset={[40, 0]}>
@@ -38,19 +43,46 @@ export default function UserCard({
             cursor="pointer"
             transition="background-color 0.2s"
             rounded="sm"
+            border={"1px"}
+            borderColor={"blackAlpha.100"}
+            borderRadius={"lg"}
           >
             <Flex
               align="center"
-              p="2"
+              px="2"
+              py={"3"}
               bg={isOpen ? "blackAlpha.100" : "transparent"}
             >
-              <Avatar size="sm" name={name} src={avatarUrl} mr="3" />
+              {isLoading ? (
+                <SkeletonCircle
+                  size="8"
+                  mr="3"
+                  startColor="blackAlpha.100"
+                  endColor="blackAlpha.200"
+                />
+              ) : (
+                <Avatar size="sm" name={name} src={avatarUrl} mr="3" />
+              )}
               <Box flex="1">
-                <Text fontWeight="medium">{name}</Text>
-                <Text fontSize="sm" color="gray.500">
-                  {email}
-                </Text>
+                {isLoading ? (
+                  <Skeleton
+                    height="16px"
+                    width="100px"
+                    startColor="blackAlpha.100"
+                    endColor="blackAlpha.200"
+                  />
+                ) : (
+                  <Text fontWeight="medium" fontSize={"xs"}>
+                    {name}
+                  </Text>
+                )}
               </Box>
+              <Icon
+                as={FiChevronDown}
+                ml={2}
+                transform={isOpen ? "rotate(180deg)" : "rotate(0deg)"}
+                transition="transform 0.2s"
+              />
             </Flex>
           </MenuButton>
           <Portal>

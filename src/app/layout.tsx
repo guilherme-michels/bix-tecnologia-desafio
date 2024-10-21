@@ -1,8 +1,10 @@
 "use client";
 
-import { Box, ChakraProvider, Flex } from "@chakra-ui/react";
-import Sidebar from "../components/sidebar";
+import { Box, ChakraProvider } from "@chakra-ui/react";
 import "../global.css";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 export default function RootLayout({
   children,
@@ -13,12 +15,11 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body>
         <ChakraProvider>
-          <Flex h="100vh">
-            <Sidebar />
-            <Box flex="1" ml="4" overflowY="auto">
+          <QueryClientProvider client={queryClient}>
+            <Box h="100vh" overflowY="auto">
               {children}
             </Box>
-          </Flex>
+          </QueryClientProvider>
         </ChakraProvider>
       </body>
     </html>

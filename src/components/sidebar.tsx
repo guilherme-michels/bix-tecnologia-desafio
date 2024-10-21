@@ -1,13 +1,8 @@
 "use client";
 
 import { Box, Flex, Icon, Spacer, Text, VStack } from "@chakra-ui/react";
-import {
-  FiDollarSign,
-  FiHome,
-  FiLogOut,
-  FiPieChart,
-  FiSettings,
-} from "react-icons/fi";
+import { FiDollarSign, FiHome, FiPieChart } from "react-icons/fi";
+import { useAuth } from "../hooks/useAuth";
 import UserCard from "./user-card";
 
 const SidebarItem = ({
@@ -32,13 +27,7 @@ const SidebarItem = ({
 );
 
 export default function Sidebar() {
-  const handleMyAccount = () => {
-    console.log("Indo para Minha conta");
-  };
-
-  const handleLogout = () => {
-    console.log("Deslogando");
-  };
+  const { user, logout, loading } = useAuth();
 
   return (
     <Box
@@ -51,24 +40,25 @@ export default function Sidebar() {
       pb="10"
       overflowX="hidden"
       overflowY="auto"
-      borderRight="1px"
-      borderRightColor="blackAlpha.100"
+      bg="white"
+      borderColor="gray.200"
+      borderRightWidth="1px"
       w="60"
     >
-      <VStack spacing="8" align="stretch" h="full">
+      <VStack spacing={4} align="stretch" p={4}>
         <Box px="4" pt="8">
           <Text fontSize="2xl" fontWeight="medium" textAlign="center">
             Bix Money
           </Text>
         </Box>
 
-        <Box px={2}>
+        <Box>
           <UserCard
-            name="John Doe"
-            email="john@example.com"
-            avatarUrl="https://bit.ly/dan-abramov"
-            onMyAccount={handleMyAccount}
-            onLogout={handleLogout}
+            name={user?.name || ""}
+            email={user?.email || ""}
+            onMyAccount={() => console.log("Indo para Minha conta")}
+            onLogout={logout}
+            isLoading={loading}
           />
         </Box>
 

@@ -10,6 +10,8 @@ import {
   Tabs,
 } from "@chakra-ui/react";
 import { RangeDatepicker } from "chakra-dayzed-datepicker";
+import { format, parse } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { DashboardFilter } from "./dashboard-filter";
@@ -27,11 +29,25 @@ export function DashboardHeader({
   const searchParams = useSearchParams();
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
 
+  const parseDate = (dateString: string | null): Date | null => {
+    if (!dateString) return null;
+    try {
+      return parse(dateString, "dd/MM/yyyy", new Date());
+    } catch {
+      return null;
+    }
+  };
+
+  const formatDate = (date: Date): string => {
+    return format(date, "dd/MM/yyyy", { locale: ptBR });
+  };
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
-    const startDate = searchParams.get("startDate");
-    const endDate = searchParams.get("endDate");
+    const startDate = parseDate(searchParams.get("startDate"));
+    const endDate = parseDate(searchParams.get("endDate"));
     if (startDate && endDate) {
-      setSelectedDates([new Date(startDate), new Date(endDate)]);
+      setSelectedDates([startDate, endDate]);
     }
   }, [searchParams]);
 
@@ -42,10 +58,6 @@ export function DashboardHeader({
       const endDate = formatDate(dates[1]);
       router.push(`/dashboard?startDate=${startDate}&endDate=${endDate}`);
     }
-  };
-
-  const formatDate = (date: Date): string => {
-    return `${date.getDate().toString().padStart(2, "0")}/${(date.getMonth() + 1).toString().padStart(2, "0")}/${date.getFullYear()}`;
   };
 
   const handleFilterChange = (filters: Record<string, string[]>) => {
@@ -97,7 +109,7 @@ export function DashboardHeader({
       <Tabs
         variant="unstyled"
         colorScheme="black"
-        value={activeTab}
+        index={["overview", "transactions", "budget"].indexOf(activeTab)}
         onChange={(index) =>
           onTabChange(["overview", "transactions", "budget"][index])
         }

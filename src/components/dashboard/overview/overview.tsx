@@ -4,32 +4,54 @@ import {
   FiDollarSign,
 } from "react-icons/fi";
 
+import type { Transaction } from "@/types/dashboard";
 import {
   Box,
   Grid,
   GridItem,
   Icon,
   SimpleGrid,
+  Skeleton,
   Stat,
   StatHelpText,
   StatLabel,
   StatNumber,
 } from "@chakra-ui/react";
-import { DepositsAndWithdrawals } from "./deposits-and-withdrawals";
+import { MoneyFlow } from "./money-flow";
 import { RecentTransactions } from "./recent-transactions";
 
-import transactionsData from "@/transactions.json";
+interface OverviewProps {
+  transactions: Transaction[];
+  isLoading: boolean;
+  onLoadMore: () => void;
+  dashboardData: {
+    totalBalance: number;
+    income: number;
+    expenses: number;
+  };
+  moneyFlowData: {
+    month: string;
+    deposits: number;
+    withdrawals: number;
+  }[];
+}
 
-const chartData = [
-  { month: "Jan", deposits: 4000, withdrawals: 2400 },
-  { month: "Fev", deposits: 3000, withdrawals: 1398 },
-  { month: "Mar", deposits: 2000, withdrawals: 9800 },
-  { month: "Abr", deposits: 2780, withdrawals: 3908 },
-  { month: "Mai", deposits: 1890, withdrawals: 4800 },
-  { month: "Jun", deposits: 2390, withdrawals: 3800 },
-];
+const formatCurrency = (value: number): string => {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+};
 
-export function Overview() {
+export function Overview({
+  transactions,
+  isLoading,
+  onLoadMore,
+  dashboardData,
+  moneyFlowData,
+}: OverviewProps) {
   return (
     <Box>
       <SimpleGrid columns={{ base: 1, md: 3 }} spacing="6" mb="8">
@@ -44,8 +66,16 @@ export function Overview() {
             <Icon as={FiDollarSign} boxSize="4" />
           </Box>
           <StatLabel>Saldo Total</StatLabel>
-          <StatNumber>R$ 5.670,00</StatNumber>
-          <StatHelpText>Atualizado há 5 minutos</StatHelpText>
+          <Skeleton
+            isLoaded={!isLoading}
+            height="36px"
+            startColor="blackAlpha.100"
+            endColor="blackAlpha.200"
+          >
+            <StatNumber>
+              {formatCurrency(dashboardData.totalBalance)}
+            </StatNumber>
+          </Skeleton>
         </Stat>
         <Stat
           position="relative"
@@ -57,9 +87,15 @@ export function Overview() {
           <Box position="absolute" top="4" right="4">
             <Icon as={FiArrowUpCircle} boxSize="4" />
           </Box>
-          <StatLabel>Receitas (este mês)</StatLabel>
-          <StatNumber>R$ 3.200,00</StatNumber>
-          <StatHelpText>+15% em relação ao mês passado</StatHelpText>
+          <StatLabel>Receitas</StatLabel>
+          <Skeleton
+            isLoaded={!isLoading}
+            height="36px"
+            startColor="blackAlpha.100"
+            endColor="blackAlpha.200"
+          >
+            <StatNumber>{formatCurrency(dashboardData.income)}</StatNumber>
+          </Skeleton>
         </Stat>
         <Stat
           position="relative"
@@ -71,17 +107,27 @@ export function Overview() {
           <Box position="absolute" top="4" right="4">
             <Icon as={FiArrowDownCircle} boxSize="4" />
           </Box>
-          <StatLabel>Despesas (este mês)</StatLabel>
-          <StatNumber>R$ 2.100,00</StatNumber>
-          <StatHelpText>-5% em relação ao mês passado</StatHelpText>
+          <StatLabel>Despesas</StatLabel>
+          <Skeleton
+            isLoaded={!isLoading}
+            height="36px"
+            startColor="blackAlpha.100"
+            endColor="blackAlpha.200"
+          >
+            <StatNumber>{formatCurrency(dashboardData.expenses)}</StatNumber>
+          </Skeleton>
         </Stat>
       </SimpleGrid>
       <Grid templateColumns={{ base: "1fr", lg: "2fr 1fr" }} gap={6}>
         <GridItem>
-          <DepositsAndWithdrawals data={chartData} />
+          <MoneyFlow data={moneyFlowData} />
         </GridItem>
         <GridItem>
-          <RecentTransactions transactions={transactionsData} />
+          <RecentTransactions
+            transactions={transactions}
+            isLoading={isLoading}
+            onLoadMore={onLoadMore}
+          />
         </GridItem>
       </Grid>
     </Box>
