@@ -2,7 +2,6 @@ import type { Transaction } from "@/types/dashboard";
 import {
   Badge,
   Box,
-  Button,
   Center,
   Flex,
   HStack,
@@ -36,33 +35,17 @@ export function RecentTransactions({
   const [displayedTransactions, setDisplayedTransactions] = useState<
     Transaction[]
   >([]);
-  const [isScrollEnabled, setIsScrollEnabled] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const transactionsPerLoad = 1;
-  const initialLoadCount = 7;
   const observerTarget = useRef(null);
 
-  const loadMoreTransactions = useCallback(() => {
-    const newTransactions = transactions.slice(
-      currentIndex,
-      currentIndex + transactionsPerLoad,
-    );
-    setDisplayedTransactions((prev) => [...prev, ...newTransactions]);
-    setCurrentIndex((prev) => prev + transactionsPerLoad);
-    onLoadMore();
-  }, [currentIndex, transactions, onLoadMore]);
-
   useEffect(() => {
-    const initialTransactions = transactions.slice(0, initialLoadCount);
-    setDisplayedTransactions(initialTransactions);
-    setCurrentIndex(initialLoadCount);
+    setDisplayedTransactions(transactions);
   }, [transactions]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && isScrollEnabled) {
-          loadMoreTransactions();
+        if (entries[0].isIntersecting && !isLoading) {
+          onLoadMore();
         }
       },
       { threshold: 1.0 },
@@ -77,11 +60,7 @@ export function RecentTransactions({
         observer.unobserve(observerTarget.current);
       }
     };
-  }, [isScrollEnabled, loadMoreTransactions]);
-
-  const enableScroll = () => {
-    setIsScrollEnabled(true);
-  };
+  }, [onLoadMore, isLoading]);
 
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
@@ -200,36 +179,25 @@ export function RecentTransactions({
       display="flex"
       flexDirection="column"
     >
-      <Flex justifyContent="space-between" alignItems="center" mb={2}>
-        <Text fontSize="xl" fontWeight="bold">
-          Transações Recentes
-        </Text>
-        {!isScrollEnabled && transactions.length > initialLoadCount && (
-          <Button onClick={enableScroll} size="sm" variant="outline">
-            Ver mais
-          </Button>
-        )}
-      </Flex>
-      {isLoading ? (
+      <Text fontSize="xl" fontWeight="bold" mb={2}>
+        Transações
+      </Text>
+      {isLoading && displayedTransactions.length === 0 ? (
         <VStack spacing={2} align="stretch" flex={1}>
-          {Array.from({ length: initialLoadCount }).map((_, index) => (
+          {Array.from({ length: 7 }).map((_, index) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
             <TransactionSkeleton key={index} />
           ))}
         </VStack>
-      ) : transactions.length === 0 ? (
+      ) : displayedTransactions.length === 0 ? (
         <NoDataFound />
       ) : (
-        <VStack
-          spacing={2}
-          align="stretch"
-          flex={1}
-          overflowY={isScrollEnabled ? "auto" : "hidden"}
-        >
+        <VStack spacing={2} align="stretch" flex={1} overflowY="auto">
           {displayedTransactions.map((transaction, index) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
             <TransactionItem key={index} transaction={transaction} />
           ))}
+          {isLoading && <TransactionSkeleton />}
           <Box ref={observerTarget} height="1px" />
         </VStack>
       )}

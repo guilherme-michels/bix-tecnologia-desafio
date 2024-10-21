@@ -1,5 +1,12 @@
 import { Box, Circle, Flex, HStack, Text, VStack } from "@chakra-ui/react";
-import { eachMonthOfInterval, format, parse } from "date-fns";
+import {
+  differenceInDays,
+  eachDayOfInterval,
+  eachMonthOfInterval,
+  eachWeekOfInterval,
+  format,
+  parse,
+} from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useSearchParams } from "next/navigation";
 import React, { useMemo } from "react";
@@ -7,7 +14,7 @@ import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 
 interface MoneyFlowProps {
   data?: {
-    month: string;
+    date: number;
     deposits: number;
     withdrawals: number;
   }[];
@@ -48,18 +55,48 @@ export function MoneyFlow({ data = [] }: MoneyFlowProps) {
   };
 
   const chartData = useMemo(() => {
-    const months = eachMonthOfInterval({ start: startDate, end: endDate });
-    const emptyData = months.map((month) => ({
-      month: format(month, "MMM yyyy", { locale: ptBR }),
+    const daysDiff = differenceInDays(endDate, startDate);
+    let interval: Date[];
+    let formatString: string;
+
+    if (daysDiff <= 31) {
+      interval = eachDayOfInterval({ start: startDate, end: endDate });
+      formatString = "dd/MM";
+    } else if (daysDiff <= 90) {
+      interval = eachWeekOfInterval({ start: startDate, end: endDate });
+      formatString = "'Semana' w";
+    } else {
+      interval = eachMonthOfInterval({ start: startDate, end: endDate });
+      formatString = "MMM yyyy";
+    }
+
+    const emptyData = interval.map((date) => ({
+      date: format(date, formatString, { locale: ptBR }),
       deposits: 0,
       withdrawals: 0,
     }));
 
     if (data.length === 0) return emptyData;
 
-    return emptyData.map((emptyMonth) => {
-      const matchingMonth = data.find((d) => d.month === emptyMonth.month);
-      return matchingMonth || emptyMonth;
+    return emptyData.map((emptyItem) => {
+      const matchingData = data.filter((d) => {
+        const itemDate = parse(emptyItem.date, formatString, new Date(), {
+          locale: ptBR,
+        });
+        return (
+          format(new Date(d.date), formatString, { locale: ptBR }) ===
+          emptyItem.date
+        );
+      });
+
+      if (matchingData.length > 0) {
+        return {
+          date: emptyItem.date,
+          deposits: matchingData.reduce((sum, d) => sum + d.deposits, 0),
+          withdrawals: matchingData.reduce((sum, d) => sum + d.withdrawals, 0),
+        };
+      }
+      return emptyItem;
     });
   }, [data, startDate, endDate]);
 
@@ -107,7 +144,7 @@ export function MoneyFlow({ data = [] }: MoneyFlowProps) {
             bottom: 20,
           }}
         >
-          <XAxis dataKey="month" axisLine={false} tickLine={false} dy={10} />
+          <XAxis dataKey="date" axisLine={false} tickLine={false} dy={10} />
           <Tooltip
             formatter={formatCurrency}
             labelStyle={{ fontWeight: "bold" }}

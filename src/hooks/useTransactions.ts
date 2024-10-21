@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Transaction } from "../types/dashboard";
 import {
   getTotalTransactionsCount,
+  loadAllTransactions,
   loadTransactions,
 } from "../utils/transactionUtils";
 
@@ -17,7 +18,10 @@ function parseBrazilianDate(dateString: string): number {
 }
 
 export function useTransactions() {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [displayedTransactions, setDisplayedTransactions] = useState<
+    Transaction[]
+  >([]);
+  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [totalTransactions, setTotalTransactions] = useState(0);
@@ -35,7 +39,7 @@ export function useTransactions() {
         : undefined;
       let endDate = endDateString
         ? parseBrazilianDate(endDateString)
-        : undefined;
+        : new Date().getTime(); // Use a data atual se não houver endDate
 
       if (endDate) {
         endDate = new Date(endDate).setHours(23, 59, 59, 999);
@@ -47,7 +51,7 @@ export function useTransactions() {
         startDate,
         endDate,
       );
-      setTransactions(pageTransactions);
+      setDisplayedTransactions((prev) => [...prev, ...pageTransactions]);
       setCurrentPage(page);
       setIsLoading(false);
     },
@@ -57,24 +61,30 @@ export function useTransactions() {
   const loadInitialTransactions = useCallback(async () => {
     setIsLoading(true);
     let start: number | undefined;
-    let end: number | undefined;
+    let end: number = new Date().getTime(); // Use a data atual como padrão
 
     if (startDateString) {
       start = parseBrazilianDate(startDateString);
     }
     if (endDateString) {
       end = parseBrazilianDate(endDateString);
-      end = new Date(end).setHours(23, 59, 59, 999);
     }
 
-    if (!start && !end) {
-      end = new Date().setHours(23, 59, 59, 999);
+    end = new Date(end).setHours(23, 59, 59, 999);
+
+    if (!start) {
       start = end - DEFAULT_DAYS * 24 * 60 * 60 * 1000;
     }
+
     const total = getTotalTransactionsCount(start, end);
     setTotalTransactions(total);
     const initialTransactions = loadTransactions(ITEMS_PER_PAGE, 0, start, end);
-    setTransactions(initialTransactions);
+    setDisplayedTransactions(initialTransactions);
+
+    // Carrega todas as transações para o período selecionado
+    const allTransactionsForPeriod = loadAllTransactions(start, end);
+    setAllTransactions(allTransactionsForPeriod);
+
     setCurrentPage(1);
     setIsLoading(false);
   }, [startDateString, endDateString]);
@@ -89,7 +99,7 @@ export function useTransactions() {
     let expenses = 0;
 
     // biome-ignore lint/complexity/noForEach: <explanation>
-    transactions.forEach((transaction) => {
+    allTransactions.forEach((transaction) => {
       const amount = Number.parseFloat(transaction.amount);
       if (transaction.transaction_type === "deposit") {
         income += amount;
@@ -101,50 +111,51 @@ export function useTransactions() {
     });
 
     return { totalBalance, income, expenses };
-  }, [transactions]);
+  }, [allTransactions]);
 
   const moneyFlowData = useMemo(() => {
-    const monthlyData: Record<
-      string,
-      { deposits: number; withdrawals: number }
-    > = {};
+    const dailyData: Record<number, { deposits: number; withdrawals: number }> =
+      {};
 
     // biome-ignore lint/complexity/noForEach: <explanation>
-    transactions.forEach((transaction) => {
-      const date = new Date(transaction.date);
-      const monthKey = format(date, "MMM yyyy", { locale: ptBR });
-
-      if (!monthlyData[monthKey]) {
-        monthlyData[monthKey] = { deposits: 0, withdrawals: 0 };
+    allTransactions.forEach((transaction) => {
+      const date = new Date(transaction.date).setHours(0, 0, 0, 0);
+      if (!dailyData[date]) {
+        dailyData[date] = { deposits: 0, withdrawals: 0 };
       }
 
       const amount = Number(transaction.amount);
       if (transaction.transaction_type === "deposit") {
-        monthlyData[monthKey].deposits += amount;
+        dailyData[date].deposits += amount;
       } else {
-        monthlyData[monthKey].withdrawals += amount;
+        dailyData[date].withdrawals += amount;
       }
     });
 
-    return Object.entries(monthlyData)
-      .map(([month, data]) => ({
-        month,
+    return Object.entries(dailyData)
+      .map(([date, data]) => ({
+        date: Number(date),
         deposits: data.deposits,
         withdrawals: data.withdrawals,
       }))
-      .sort(
-        (a, b) => new Date(a.month).getTime() - new Date(b.month).getTime(),
-      );
-  }, [transactions]);
+      .sort((a, b) => a.date - b.date);
+  }, [allTransactions]);
+
+  const loadMoreTransactions = useCallback(() => {
+    if (!isLoading) {
+      loadTransactionsPage(currentPage + 1);
+    }
+  }, [isLoading, currentPage, loadTransactionsPage]);
 
   return {
-    transactions,
+    displayedTransactions,
     isLoading,
     currentPage,
     totalTransactions,
     totalPages: Math.ceil(totalTransactions / ITEMS_PER_PAGE),
     loadInitialTransactions,
     loadTransactionsPage,
+    loadMoreTransactions,
     dashboardData,
     moneyFlowData,
   };

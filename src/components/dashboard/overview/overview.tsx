@@ -13,28 +13,12 @@ import {
   SimpleGrid,
   Skeleton,
   Stat,
-  StatHelpText,
   StatLabel,
   StatNumber,
 } from "@chakra-ui/react";
+import { useTransactions } from "../../../hooks/useTransactions";
 import { MoneyFlow } from "./money-flow";
 import { RecentTransactions } from "./recent-transactions";
-
-interface OverviewProps {
-  transactions: Transaction[];
-  isLoading: boolean;
-  onLoadMore: () => void;
-  dashboardData: {
-    totalBalance: number;
-    income: number;
-    expenses: number;
-  };
-  moneyFlowData: {
-    month: string;
-    deposits: number;
-    withdrawals: number;
-  }[];
-}
 
 const formatCurrency = (value: number): string => {
   return new Intl.NumberFormat("pt-BR", {
@@ -45,13 +29,15 @@ const formatCurrency = (value: number): string => {
   }).format(value);
 };
 
-export function Overview({
-  transactions,
-  isLoading,
-  onLoadMore,
-  dashboardData,
-  moneyFlowData,
-}: OverviewProps) {
+export function Overview() {
+  const {
+    displayedTransactions,
+    isLoading,
+    loadMoreTransactions,
+    dashboardData,
+    moneyFlowData,
+  } = useTransactions();
+
   return (
     <Box>
       <SimpleGrid columns={{ base: 1, md: 3 }} spacing="6" mb="8">
@@ -124,9 +110,9 @@ export function Overview({
         </GridItem>
         <GridItem>
           <RecentTransactions
-            transactions={transactions}
+            transactions={displayedTransactions}
             isLoading={isLoading}
-            onLoadMore={onLoadMore}
+            onLoadMore={loadMoreTransactions}
           />
         </GridItem>
       </Grid>

@@ -8,12 +8,13 @@ import {
   TabIndicator,
   TabList,
   Tabs,
+  Text,
 } from "@chakra-ui/react";
 import { RangeDatepicker } from "chakra-dayzed-datepicker";
-import { format, parse } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { format } from "date-fns";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTransactions } from "../../hooks/useTransactions";
 import { DashboardFilter } from "./dashboard-filter";
 
 interface DashboardHeaderProps {
@@ -29,25 +30,14 @@ export function DashboardHeader({
   const searchParams = useSearchParams();
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
 
-  const parseDate = (dateString: string | null): Date | null => {
-    if (!dateString) return null;
-    try {
-      return parse(dateString, "dd/MM/yyyy", new Date());
-    } catch {
-      return null;
-    }
-  };
-
-  const formatDate = (date: Date): string => {
-    return format(date, "dd/MM/yyyy", { locale: ptBR });
-  };
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
-    const startDate = parseDate(searchParams.get("startDate"));
-    const endDate = parseDate(searchParams.get("endDate"));
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
     if (startDate && endDate) {
-      setSelectedDates([startDate, endDate]);
+      setSelectedDates([
+        parseBrazilianDate(startDate),
+        parseBrazilianDate(endDate),
+      ]);
     }
   }, [searchParams]);
 
@@ -56,13 +46,27 @@ export function DashboardHeader({
     if (dates.length === 2) {
       const startDate = formatDate(dates[0]);
       const endDate = formatDate(dates[1]);
-      router.push(`/dashboard?startDate=${startDate}&endDate=${endDate}`);
+      const currentParams = new URLSearchParams(searchParams.toString());
+      currentParams.set("startDate", startDate);
+      currentParams.set("endDate", endDate);
+      router.push(`/dashboard?${currentParams.toString()}`);
     }
+  };
+
+  const formatDate = (date: Date): string => {
+    return format(date, "dd/MM/yyyy");
+  };
+
+  const parseBrazilianDate = (dateString: string): Date => {
+    const [day, month, year] = dateString.split("/").map(Number);
+    return new Date(year, month - 1, day);
   };
 
   const handleFilterChange = (filters: Record<string, string[]>) => {
     console.log("Filtros aplicados:", filters);
   };
+
+  const { dashboardData } = useTransactions();
 
   return (
     <Box mb="6">

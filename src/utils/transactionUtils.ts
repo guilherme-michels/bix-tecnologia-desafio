@@ -55,3 +55,25 @@ export function getTotalTransactionsCount(
 
   return (filteredTransactions as Transaction[]).length;
 }
+
+export function loadAllTransactions(
+  startDate?: number,
+  endDate?: number,
+): Transaction[] {
+  let filteredTransactions = transactionsData;
+  if (startDate) {
+    filteredTransactions = (filteredTransactions as Transaction[]).filter(
+      (t: Transaction) => t.date >= startDate,
+    );
+  }
+
+  if (endDate) {
+    filteredTransactions = (filteredTransactions as Transaction[]).filter(
+      (t: Transaction) => t.date <= endDate,
+    );
+  }
+
+  return (filteredTransactions as Transaction[]).sort(
+    (a: Transaction, b: Transaction) => b.date - a.date,
+  );
+}
