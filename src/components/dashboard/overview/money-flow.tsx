@@ -129,6 +129,7 @@ export function MoneyFlow({ data = [] }: MoneyFlowProps) {
       bg="white"
       boxShadow="sm"
       overflow="hidden"
+      width="100%"
     >
       <Flex
         justifyContent="space-between"

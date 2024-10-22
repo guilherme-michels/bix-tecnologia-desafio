@@ -54,7 +54,7 @@ export function Overview() {
   });
 
   return (
-    <Box>
+    <Box maxWidth="100%" overflow="hidden">
       <SimpleGrid
         columns={{ base: 1, sm: 2, md: 3 }}
         spacing={{ base: 4, md: 6 }}
@@ -139,11 +139,15 @@ export function Overview() {
           </Skeleton>
         </Stat>
       </SimpleGrid>
-      <Grid templateColumns={gridTemplateColumns} gap={{ base: 4, md: 6 }}>
-        <GridItem>
+      <Grid
+        templateColumns={gridTemplateColumns}
+        gap={{ base: 4, md: 6 }}
+        width="100%"
+      >
+        <GridItem width="100%">
           <MoneyFlow data={moneyFlowData} />
         </GridItem>
-        <GridItem>
+        <GridItem width="100%">
           <TransactionsListCard
             transactions={displayedTransactions}
             isLoading={isLoading}
