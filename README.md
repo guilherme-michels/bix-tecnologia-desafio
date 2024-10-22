@@ -21,28 +21,15 @@ Primeiro execute a instalação dos pacotes com:
 
 ```bash
 npm install
-# ou
-yarn
-# ou
-pnpm install
-# ou
-bun install
 ```
 
-Primeiro, execute o servidor de desenvolvimento:
+Depois, execute o servidor de desenvolvimento:
 
 ```bash
 npm run dev
-# ou
-yarn dev
-# ou
-pnpm dev
-# ou
-bun dev
 ```
 
 Abra [http://localhost:3000](http://localhost:3000) no seu navegador para ver o resultado.
-
 
 
 ## Dados de Login
@@ -52,3 +39,6 @@ Para acessar o dashboard, use as seguintes credenciais:
 - Usuário: bix@tecnologia.com
 - Senha: bixtecnologia
 
+## Deploy na Vercel
+
+A maneira mais fácil de implantar seu aplicativo Next.js é usar a [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) dos criadores do Next.js.
