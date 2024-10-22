@@ -19,9 +19,20 @@ import {
 } from "@chakra-ui/react";
 import { useBreakpointValue } from "@chakra-ui/react";
 import type React from "react";
+import { useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { FiAlertCircle } from "react-icons/fi";
 import { useTransactions } from "../../../hooks/useTransactions";
+
+interface Filters {
+  startDate?: Date;
+  endDate?: Date;
+  accounts: string[];
+  industries: string[];
+  states: string[];
+  transactionTypes: string[];
+  currencies: string[];
+}
 
 export const TransactionsTable: React.FC = () => {
   const {
@@ -73,10 +84,16 @@ export const TransactionsTable: React.FC = () => {
     new Set(allTransactions.map((t) => t.state)),
   ).sort();
 
+  const [localFilters, setLocalFilters] = useState<Filters>({
+    accounts: [],
+    industries: [],
+    states: [],
+    transactionTypes: [],
+    currencies: [],
+  });
+
   const clearFilters = () => {
-    setFilters({
-      startDate: undefined,
-      endDate: undefined,
+    setLocalFilters({
       accounts: [],
       industries: [],
       states: [],
@@ -110,13 +127,13 @@ export const TransactionsTable: React.FC = () => {
         <Select
           placeholder="Conta"
           onChange={(e) =>
-            setFilters({
-              ...filters,
+            setLocalFilters({
+              ...localFilters,
               accounts: e.target.value ? [e.target.value] : [],
             })
           }
           maxWidth={{ base: "100%", md: "150px" }}
-          value={filters.accounts[0] || ""}
+          value={localFilters.accounts[0] || ""}
           fontSize={isMobile ? "sm" : "md"}
         >
           <option value="">Todas as contas</option>
@@ -129,13 +146,13 @@ export const TransactionsTable: React.FC = () => {
         <Select
           placeholder="Indústria"
           onChange={(e) =>
-            setFilters({
-              ...filters,
+            setLocalFilters({
+              ...localFilters,
               industries: e.target.value ? [e.target.value] : [],
             })
           }
           maxWidth={{ base: "100%", md: "150px" }}
-          value={filters.industries[0] || ""}
+          value={localFilters.industries[0] || ""}
           fontSize={isMobile ? "sm" : "md"}
         >
           <option value="">Todas as indústrias</option>
@@ -148,13 +165,13 @@ export const TransactionsTable: React.FC = () => {
         <Select
           placeholder="Estado"
           onChange={(e) =>
-            setFilters({
-              ...filters,
+            setLocalFilters({
+              ...localFilters,
               states: e.target.value ? [e.target.value] : [],
             })
           }
           maxWidth={{ base: "100%", md: "150px" }}
-          value={filters.states[0] || ""}
+          value={localFilters.states[0] || ""}
           fontSize={isMobile ? "sm" : "md"}
         >
           <option value="">Todos os estados</option>
@@ -216,7 +233,7 @@ export const TransactionsTable: React.FC = () => {
               displayedTransactions.map((transaction, index) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                 <Tr key={index}>
-                  <Td>{formatDateTime(transaction.date, isMobile)}</Td>
+                  <Td>{formatDateTime(transaction.date, isMobile ?? false)}</Td>
                   <Td>{transaction.account}</Td>
                   {!isMobile && <Td>{transaction.industry}</Td>}
                   {!isMobile && (
