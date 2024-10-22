@@ -57,11 +57,13 @@ export const TransactionsTable: React.FC = () => {
 
   const uniqueAccounts = Array.from(
     new Set(allTransactions.map((t) => t.account)),
-  );
+  ).sort();
   const uniqueIndustries = Array.from(
     new Set(allTransactions.map((t) => t.industry)),
-  );
-  const uniqueStates = Array.from(new Set(allTransactions.map((t) => t.state)));
+  ).sort();
+  const uniqueStates = Array.from(
+    new Set(allTransactions.map((t) => t.state)),
+  ).sort();
 
   const clearFilters = () => {
     setFilters({

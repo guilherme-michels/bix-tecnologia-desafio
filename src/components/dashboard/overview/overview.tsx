@@ -18,7 +18,7 @@ import {
 import { useCallback } from "react";
 import { useTransactions } from "../../../hooks/useTransactions";
 import { MoneyFlow } from "./money-flow";
-import { RecentTransactions } from "./recent-transactions";
+import { TransactionsListCard } from "./transactions-list-card";
 
 const formatCurrency = (value: number): string => {
   return new Intl.NumberFormat("pt-BR", {
@@ -30,8 +30,14 @@ const formatCurrency = (value: number): string => {
 };
 
 export function Overview() {
-  const { displayedTransactions, isLoading, dashboardData, moneyFlowData } =
-    useTransactions(true);
+  const {
+    displayedTransactions,
+    isLoading,
+    loadMoreTransactions,
+    hasMoreTransactions,
+    dashboardData,
+    moneyFlowData,
+  } = useTransactions(true);
 
   const formatValue = useCallback((value: number | null) => {
     return value !== null ? formatCurrency(value) : "";
@@ -106,9 +112,11 @@ export function Overview() {
           <MoneyFlow data={moneyFlowData} />
         </GridItem>
         <GridItem>
-          <RecentTransactions
+          <TransactionsListCard
             transactions={displayedTransactions}
             isLoading={isLoading}
+            loadMoreTransactions={loadMoreTransactions}
+            hasMoreTransactions={hasMoreTransactions}
           />
         </GridItem>
       </Grid>

@@ -51,7 +51,7 @@ export function MoneyFlow({ data = [] }: MoneyFlowProps) {
   const endDate = parseDate(endDateParam) || new Date();
 
   const getDescription = () => {
-    return `Fluxo monetário do período de ${formatDate(startDate)} a ${formatDate(endDate)}`;
+    return `Período de ${formatDate(startDate)} a ${formatDate(endDate)}`;
   };
 
   const chartData = useMemo(() => {
@@ -80,9 +80,6 @@ export function MoneyFlow({ data = [] }: MoneyFlowProps) {
 
     return emptyData.map((emptyItem) => {
       const matchingData = data.filter((d) => {
-        const itemDate = parse(emptyItem.date, formatString, new Date(), {
-          locale: ptBR,
-        });
         return (
           format(new Date(d.date), formatString, { locale: ptBR }) ===
           emptyItem.date

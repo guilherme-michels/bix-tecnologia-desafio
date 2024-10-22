@@ -1,13 +1,16 @@
 import {
   Box,
   Button,
+  Flex,
   Menu,
   MenuButton,
   MenuItem,
   MenuList,
+  Text,
 } from "@chakra-ui/react";
 import React from "react";
 import { FaChevronDown } from "react-icons/fa6";
+import { FiArrowDownCircle, FiArrowUpCircle } from "react-icons/fi";
 
 interface FilterOption {
   label: string;
@@ -70,7 +73,11 @@ export function DashboardFilter({
                 onClick={() => handleFilterClick(filter.label, option)}
                 fontSize={"sm"}
               >
-                {option}
+                <Flex alignItems="center">
+                  {option === "Depósito" && <FiArrowUpCircle color="green" />}
+                  {option === "Saque" && <FiArrowDownCircle color="red" />}
+                  <Text ml={2}>{option}</Text>
+                </Flex>
               </MenuItem>
             ))}
           </Box>

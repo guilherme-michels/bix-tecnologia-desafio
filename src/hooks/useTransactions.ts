@@ -37,6 +37,7 @@ export function useTransactions(isOverview = false) {
     transactionTypes: [],
     currencies: [],
   });
+  const [hasMoreTransactions, setHasMoreTransactions] = useState(true);
 
   const startDateString = searchParams?.get("startDate") ?? null;
   const endDateString = searchParams?.get("endDate") ?? null;
@@ -164,15 +165,62 @@ export function useTransactions(isOverview = false) {
       .sort((a, b) => a.date - b.date);
   }, [allTransactions]);
 
+  const loadMoreTransactions = useCallback(() => {
+    if (isLoading || !hasMoreTransactions) return;
+
+    setIsLoading(true);
+    const nextPage = currentPage + 1;
+    const offset = displayedTransactions.length;
+
+    let filteredTransactions = filterTransactions(allTransactions, filters);
+    if (debouncedSearchTerm) {
+      filteredTransactions = searchTransactions(
+        filteredTransactions,
+        debouncedSearchTerm,
+      );
+    }
+
+    const newTransactions = filteredTransactions.slice(
+      offset,
+      offset + ITEMS_PER_PAGE,
+    );
+
+    if (newTransactions.length > 0) {
+      setDisplayedTransactions((prev) => [...prev, ...newTransactions]);
+      setCurrentPage(nextPage);
+      setHasMoreTransactions(
+        offset + ITEMS_PER_PAGE < filteredTransactions.length,
+      );
+    } else {
+      setHasMoreTransactions(false);
+    }
+
+    setIsLoading(false);
+  }, [
+    isLoading,
+    hasMoreTransactions,
+    currentPage,
+    displayedTransactions.length,
+    allTransactions,
+    filters,
+    debouncedSearchTerm,
+  ]);
+
+  const totalPages = useMemo(
+    () => Math.ceil(totalTransactions / ITEMS_PER_PAGE),
+    [totalTransactions],
+  );
+
   return {
     displayedTransactions,
     allTransactions,
     isLoading,
     currentPage,
     totalTransactions,
-    totalPages: Math.ceil(totalTransactions / ITEMS_PER_PAGE),
-    loadInitialTransactions,
+    totalPages,
     loadTransactionsPage,
+    loadMoreTransactions,
+    hasMoreTransactions,
     setSearchTerm,
     searchTerm,
     dashboardData,
