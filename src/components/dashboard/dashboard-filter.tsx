@@ -14,24 +14,21 @@ import { FaChevronDown } from "react-icons/fa6";
 interface FilterOption {
   label: string;
   options: string[];
+  valueMap?: Record<string, string>;
 }
 
 const filterOptions: FilterOption[] = [
   {
     label: "Tipo de Transação",
-    options: ["deposit", "withdrawal"],
+    options: ["Depósito", "Saque"],
+    valueMap: {
+      Depósito: "deposit",
+      Saque: "withdrawal",
+    },
   },
   {
     label: "Moeda",
-    options: ["brl", "usd"],
-  },
-  {
-    label: "Indústria",
-    options: ["Food Consumer Products", "Hotels"],
-  },
-  {
-    label: "Estado",
-    options: ["MN", "NV"],
+    options: ["BRL", "USD"],
   },
 ];
 
@@ -59,7 +56,21 @@ export function DashboardFilter({ onFilterChange }: DashboardFilterProps) {
       if (updatedFilters[category].length === 0) {
         delete updatedFilters[category];
       }
-      onFilterChange(updatedFilters);
+
+      const mappedFilters = Object.entries(updatedFilters).reduce(
+        (acc, [key, values]) => {
+          const filterOption = filterOptions.find((opt) => opt.label === key);
+          if (filterOption?.valueMap) {
+            acc[key] = values.map((v) => filterOption.valueMap?.[v] ?? v);
+          } else {
+            acc[key] = values;
+          }
+          return acc;
+        },
+        {} as Record<string, string[]>,
+      );
+
+      onFilterChange(mappedFilters);
       return updatedFilters;
     });
   };
@@ -75,7 +86,7 @@ export function DashboardFilter({ onFilterChange }: DashboardFilterProps) {
       >
         Filtros
       </MenuButton>
-      <MenuList maxHeight="300px" overflowY="auto">
+      <MenuList>
         {filterOptions.map((filter) => (
           <MenuItem key={filter.label} onClick={(e) => e.preventDefault()}>
             <VStack align="start" spacing={2} width="100%">

@@ -1,5 +1,5 @@
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface User {
   id: string;
@@ -21,33 +21,32 @@ export function useAuth() {
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      console.log("Usuário encontrado no localStorage:", storedUser);
       setUser(JSON.parse(storedUser));
-    } else {
-      console.log("Nenhum usuário encontrado no localStorage");
     }
+
     setLoading(false);
   }, []);
 
-  const login = (email: string, password: string) => {
+  const login = async (email: string, password: string) => {
     console.log("Tentativa de login:", email, password);
     if (email === "a@a.com" && password === "teste123") {
       console.log("Login bem-sucedido");
       setUser(mockUser);
       localStorage.setItem("user", JSON.stringify(mockUser));
-      router.push("/dashboard");
-    } else {
-      console.log("Credenciais inválidas");
-      throw new Error("Credenciais inválidas");
+      await router.push("/dashboard");
+
+      return mockUser;
     }
+
+    throw new Error("Credenciais inválidas");
   };
 
-  const logout = () => {
+  const logout = useCallback(() => {
     console.log("Logout realizado");
     setUser(null);
     localStorage.removeItem("user");
     router.push("/auth");
-  };
+  }, [router]);
 
   return { user, loading, login, logout };
 }

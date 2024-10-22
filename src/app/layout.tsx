@@ -2,9 +2,6 @@
 
 import { Box, ChakraProvider } from "@chakra-ui/react";
 import "../global.css";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
-const queryClient = new QueryClient();
 
 export default function RootLayout({
   children,
@@ -15,11 +12,9 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body>
         <ChakraProvider>
-          <QueryClientProvider client={queryClient}>
-            <Box h="100vh" overflowY="auto">
-              {children}
-            </Box>
-          </QueryClientProvider>
+          <Box h="100vh" overflowY="auto">
+            {children}
+          </Box>
         </ChakraProvider>
       </body>
     </html>

@@ -8,6 +8,9 @@ import {
   TabIndicator,
   TabList,
   Tabs,
+  Tag,
+  TagCloseButton,
+  TagLabel,
   Text,
 } from "@chakra-ui/react";
 import { RangeDatepicker } from "chakra-dayzed-datepicker";
@@ -29,10 +32,12 @@ export function DashboardHeader({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
-
+  const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>(
+    {},
+  );
   useEffect(() => {
-    const startDate = searchParams.get("startDate");
-    const endDate = searchParams.get("endDate");
+    const startDate = searchParams?.get("startDate");
+    const endDate = searchParams?.get("endDate");
     if (startDate && endDate) {
       setSelectedDates([
         parseBrazilianDate(startDate),
@@ -46,10 +51,7 @@ export function DashboardHeader({
     if (dates.length === 2) {
       const startDate = formatDate(dates[0]);
       const endDate = formatDate(dates[1]);
-      const currentParams = new URLSearchParams(searchParams.toString());
-      currentParams.set("startDate", startDate);
-      currentParams.set("endDate", endDate);
-      router.push(`/dashboard?${currentParams.toString()}`);
+      updateSearchParams({ startDate, endDate });
     }
   };
 
@@ -63,7 +65,32 @@ export function DashboardHeader({
   };
 
   const handleFilterChange = (filters: Record<string, string[]>) => {
-    console.log("Filtros aplicados:", filters);
+    setActiveFilters(filters);
+    updateSearchParams(filters);
+  };
+
+  const removeFilter = (key: string, value: string) => {
+    const updatedFilters = { ...activeFilters };
+    updatedFilters[key] = updatedFilters[key].filter((v) => v !== value);
+    if (updatedFilters[key].length === 0) {
+      delete updatedFilters[key];
+    }
+    setActiveFilters(updatedFilters);
+    updateSearchParams(updatedFilters);
+  };
+  const updateSearchParams = (params: Record<string, string | string[]>) => {
+    const currentParams = new URLSearchParams(searchParams?.toString() ?? "");
+    // biome-ignore lint/complexity/noForEach: <explanation>
+    Object.entries(params).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        currentParams.delete(key);
+        // biome-ignore lint/complexity/noForEach: <explanation>
+        value.forEach((v) => currentParams.append(key, v));
+      } else {
+        currentParams.set(key, value);
+      }
+    });
+    router.push(`/dashboard?${currentParams.toString()}`);
   };
 
   const { dashboardData } = useTransactions();
@@ -110,6 +137,28 @@ export function DashboardHeader({
           </Box>
         </Flex>
       </Flex>
+      {Object.keys(activeFilters).length > 0 && (
+        <Flex align="center" mt={2} mb={4}>
+          <Text fontWeight="bold" mr={2}>
+            Filtrando por:
+          </Text>
+          {Object.entries(activeFilters).map(([key, values]) =>
+            values.map((value) => (
+              <Tag
+                key={`${key}-${value}`}
+                size="md"
+                borderRadius="full"
+                variant="solid"
+                colorScheme="blue"
+                mr={2}
+              >
+                <TagLabel>{`${key}: ${value}`}</TagLabel>
+                <TagCloseButton onClick={() => removeFilter(key, value)} />
+              </Tag>
+            )),
+          )}
+        </Flex>
+      )}
       <Tabs
         variant="unstyled"
         colorScheme="black"

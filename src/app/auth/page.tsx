@@ -14,22 +14,20 @@ import {
 } from "@chakra-ui/react";
 import Image from "next/image";
 import { useState } from "react";
-import { Toaster } from "sonner";
+import { Toaster, toast } from "sonner";
 import { useAuth } from "../../hooks/useAuth";
 
 export default function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const { login, isLoggingIn } = useAuth();
+  const { login, loading } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     try {
       await login(email, password);
     } catch (err) {
-      setError("Credenciais inválidas");
+      toast.error("Credenciais inválidas");
     }
   };
 
@@ -39,7 +37,6 @@ export default function AuthPage() {
   return (
     <Flex minHeight="100vh" width="full">
       <Toaster position="top-right" />
-      {/* Lado esquerdo - Imagem */}
       <Box flex={1} position="relative" display={{ base: "none", md: "block" }}>
         <Image
           src="/login-image.jpg"
@@ -49,7 +46,6 @@ export default function AuthPage() {
         />
       </Box>
 
-      {/* Lado direito - Formulário de login */}
       <Flex
         flex={1}
         direction="column"
@@ -86,13 +82,12 @@ export default function AuthPage() {
                   required
                 />
               </FormControl>
-              {error && <Text color="red.500">{error}</Text>}
               <Button
                 type="submit"
                 colorScheme="blue"
                 width="full"
                 size="lg"
-                isLoading={isLoggingIn}
+                isLoading={loading}
                 loadingText="Entrando..."
               >
                 Entrar

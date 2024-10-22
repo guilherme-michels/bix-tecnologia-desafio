@@ -4,7 +4,6 @@ import {
   FiDollarSign,
 } from "react-icons/fi";
 
-import type { Transaction } from "@/types/dashboard";
 import {
   Box,
   Grid,
@@ -36,7 +35,7 @@ export function Overview() {
     loadMoreTransactions,
     dashboardData,
     moneyFlowData,
-  } = useTransactions();
+  } = useTransactions(true);
 
   return (
     <Box>

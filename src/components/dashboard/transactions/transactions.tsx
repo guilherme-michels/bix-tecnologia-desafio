@@ -16,35 +16,23 @@ import {
   Thead,
   Tr,
 } from "@chakra-ui/react";
+import { useSearchParams } from "next/navigation";
 import type React from "react";
 import { useMemo, useState } from "react";
 import { FaSearch } from "react-icons/fa";
-import type { Transaction } from "../../../types/dashboard";
+import { FiAlertCircle } from "react-icons/fi";
+import { useTransactions } from "../../../hooks/useTransactions";
 
-interface TransactionsTableProps {
-  transactions: Transaction[];
-  isLoading: boolean;
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-}
-
-export const TransactionsTable: React.FC<TransactionsTableProps> = ({
-  transactions,
-  isLoading,
-  currentPage,
-  totalPages,
-  onPageChange,
-}) => {
-  const [search, setSearch] = useState("");
-
-  const filteredTransactions = useMemo(() => {
-    return transactions.filter(
-      (transaction) =>
-        transaction.account.toLowerCase().includes(search.toLowerCase()) ||
-        transaction.industry.toLowerCase().includes(search.toLowerCase()),
-    );
-  }, [transactions, search]);
+export const TransactionsTable: React.FC = () => {
+  const {
+    displayedTransactions,
+    isLoading,
+    currentPage,
+    totalPages,
+    loadTransactionsPage,
+    setSearchTerm,
+    searchTerm,
+  } = useTransactions(false);
 
   const formatDateTime = (timestamp: number) => {
     const date = new Date(timestamp);
@@ -73,100 +61,117 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
         </InputLeftElement>
         <Input
           placeholder="Buscar por conta ou indústria"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
       </InputGroup>
 
-      {isLoading ? (
-        <Flex justify="center" align="center" height="200px">
-          <Spinner />
-        </Flex>
-      ) : (
-        <>
-          <TableContainer>
-            <Table variant="simple" size="md">
-              <Thead>
-                <Tr>
-                  <Th>Data e Hora</Th>
-                  <Th>Conta</Th>
-                  <Th>Indústria</Th>
-                  <Th>Tipo</Th>
-                  <Th isNumeric>Valor</Th>
-                  <Th>Estado</Th>
+      <TableContainer>
+        <Table variant="simple" size="md">
+          <Thead>
+            <Tr>
+              <Th>Data e Hora</Th>
+              <Th>Conta</Th>
+              <Th>Indústria</Th>
+              <Th>Tipo</Th>
+              <Th isNumeric>Valor</Th>
+              <Th>Estado</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {isLoading ? (
+              <Tr>
+                <Td colSpan={6}>
+                  <Flex justify="center" align="center" height="200px">
+                    <Spinner />
+                  </Flex>
+                </Td>
+              </Tr>
+            ) : displayedTransactions.length === 0 ? (
+              <Tr>
+                <Td colSpan={6}>
+                  <Flex
+                    justify="center"
+                    align="center"
+                    height="200px"
+                    flexDirection="column"
+                  >
+                    <FiAlertCircle size={24} color="gray.400" />
+                    <Text mt={2} color="gray.500" fontSize="md">
+                      Nenhum dado encontrado
+                    </Text>
+                  </Flex>
+                </Td>
+              </Tr>
+            ) : (
+              displayedTransactions.map((transaction, index) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                <Tr key={index}>
+                  <Td>
+                    <Text fontSize="md">
+                      {formatDateTime(transaction.date)}
+                    </Text>
+                  </Td>
+                  <Td>
+                    <Text fontSize="md">{transaction.account}</Text>
+                  </Td>
+                  <Td>
+                    <Text fontSize="md">{transaction.industry}</Text>
+                  </Td>
+                  <Td>
+                    <Badge
+                      colorScheme={
+                        transaction.transaction_type === "deposit"
+                          ? "green"
+                          : "red"
+                      }
+                    >
+                      {transaction.transaction_type === "deposit"
+                        ? "Depósito"
+                        : "Saque"}
+                    </Badge>
+                  </Td>
+                  <Td isNumeric>
+                    <Text
+                      fontSize="md"
+                      fontWeight={"bold"}
+                      color={
+                        transaction.transaction_type === "deposit"
+                          ? "green"
+                          : "red"
+                      }
+                    >
+                      {formatCurrency(transaction.amount, transaction.currency)}
+                    </Text>
+                  </Td>
+                  <Td>
+                    <Text fontSize="md">{transaction.state}</Text>
+                  </Td>
                 </Tr>
-              </Thead>
-              <Tbody>
-                {filteredTransactions.map((transaction, index) => (
-                  // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-                  <Tr key={index}>
-                    <Td>
-                      <Text fontSize="md">
-                        {formatDateTime(transaction.date)}
-                      </Text>
-                    </Td>
-                    <Td>
-                      <Text fontSize="md">{transaction.account}</Text>
-                    </Td>
-                    <Td>
-                      <Text fontSize="md">{transaction.industry}</Text>
-                    </Td>
-                    <Td>
-                      <Badge
-                        colorScheme={
-                          transaction.transaction_type === "deposit"
-                            ? "green"
-                            : "red"
-                        }
-                      >
-                        {transaction.transaction_type === "deposit"
-                          ? "Depósito"
-                          : "Saque"}
-                      </Badge>
-                    </Td>
-                    <Td isNumeric>
-                      <Text
-                        fontSize="md"
-                        fontWeight={"bold"}
-                        color={
-                          transaction.transaction_type === "deposit"
-                            ? "green"
-                            : "red"
-                        }
-                      >
-                        {formatCurrency(
-                          transaction.amount,
-                          transaction.currency,
-                        )}
-                      </Text>
-                    </Td>
-                    <Td>
-                      <Text fontSize="md">{transaction.state}</Text>
-                    </Td>
-                  </Tr>
-                ))}
-              </Tbody>
-            </Table>
-          </TableContainer>
+              ))
+            )}
+          </Tbody>
+        </Table>
+      </TableContainer>
 
-          <Flex justifyContent="space-between" alignItems="center" mt={4}>
-            <Button
-              onClick={() => onPageChange(currentPage - 1)}
-              isDisabled={currentPage === 1}
-            >
-              Anterior
-            </Button>
-            <Text>
-              Página {currentPage} de {totalPages}
-            </Text>
-            <Button
-              onClick={() => onPageChange(currentPage + 1)}
-              isDisabled={currentPage === totalPages}
-            >
-              Próxima
-            </Button>
-          </Flex>
-        </>
+      {!isLoading && displayedTransactions.length > 0 && (
+        <Flex justifyContent="space-between" alignItems="center" mt={4}>
+          <Button
+            onClick={() => loadTransactionsPage(currentPage - 1)}
+            isDisabled={currentPage === 1}
+          >
+            Anterior
+          </Button>
+          <Text>
+            Página {currentPage} de {totalPages}
+          </Text>
+          <Button
+            onClick={() => loadTransactionsPage(currentPage + 1)}
+            isDisabled={currentPage === totalPages}
+          >
+            Próxima
+          </Button>
+        </Flex>
       )}
     </Box>
   );

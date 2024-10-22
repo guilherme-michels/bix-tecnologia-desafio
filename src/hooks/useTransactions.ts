@@ -1,13 +1,13 @@
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { subDays } from "date-fns";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Transaction } from "../types/dashboard";
 import {
-  getTotalTransactionsCount,
+  filterTransactions,
   loadAllTransactions,
-  loadTransactions,
+  searchTransactions,
 } from "../utils/transactionUtils";
+import { useDebounce } from "./useDebounce";
 
 const ITEMS_PER_PAGE = 10;
 const DEFAULT_DAYS = 30;
@@ -17,81 +17,68 @@ function parseBrazilianDate(dateString: string): number {
   return new Date(year, month - 1, day).getTime();
 }
 
-export function useTransactions() {
-  const [displayedTransactions, setDisplayedTransactions] = useState<
-    Transaction[]
-  >([]);
-  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
+export function useTransactions(isOverview = false) {
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [totalTransactions, setTotalTransactions] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const searchParams = useSearchParams();
 
-  const startDateString = searchParams.get("startDate");
-  const endDateString = searchParams.get("endDate");
+  const startDateString = searchParams?.get("startDate") ?? null;
+  const endDateString = searchParams?.get("endDate") ?? null;
+  const transactionTypes = searchParams?.getAll("Tipo de Transação") ?? [];
+  const currencies = searchParams?.getAll("Moeda") ?? [];
 
-  const loadTransactionsPage = useCallback(
-    async (page: number) => {
-      setIsLoading(true);
-      const offset = (page - 1) * ITEMS_PER_PAGE;
-      const startDate = startDateString
-        ? parseBrazilianDate(startDateString)
-        : undefined;
-      let endDate = endDateString
-        ? parseBrazilianDate(endDateString)
-        : new Date().getTime(); // Use a data atual se não houver endDate
-
-      if (endDate) {
-        endDate = new Date(endDate).setHours(23, 59, 59, 999);
-      }
-
-      const pageTransactions = loadTransactions(
-        ITEMS_PER_PAGE,
-        offset,
-        startDate,
-        endDate,
-      );
-      setDisplayedTransactions((prev) => [...prev, ...pageTransactions]);
-      setCurrentPage(page);
-      setIsLoading(false);
-    },
-    [startDateString, endDateString],
-  );
-
-  const loadInitialTransactions = useCallback(async () => {
+  const loadTransactions = useCallback(async () => {
     setIsLoading(true);
     let start: number | undefined;
-    let end: number = new Date().getTime(); // Use a data atual como padrão
+    let end: number | undefined;
 
     if (startDateString) {
       start = parseBrazilianDate(startDateString);
+    } else if (isOverview) {
+      start = subDays(new Date(), DEFAULT_DAYS).getTime();
     }
+
     if (endDateString) {
       end = parseBrazilianDate(endDateString);
+      end = new Date(end).setHours(23, 59, 59, 999);
     }
 
-    end = new Date(end).setHours(23, 59, 59, 999);
-
-    if (!start) {
-      start = end - DEFAULT_DAYS * 24 * 60 * 60 * 1000;
-    }
-
-    const total = getTotalTransactionsCount(start, end);
-    setTotalTransactions(total);
-    const initialTransactions = loadTransactions(ITEMS_PER_PAGE, 0, start, end);
-    setDisplayedTransactions(initialTransactions);
-
-    // Carrega todas as transações para o período selecionado
-    const allTransactionsForPeriod = loadAllTransactions(start, end);
-    setAllTransactions(allTransactionsForPeriod);
-
-    setCurrentPage(1);
+    const allTransactions = loadAllTransactions(start, end);
+    setTransactions(allTransactions);
     setIsLoading(false);
-  }, [startDateString, endDateString]);
+  }, [startDateString, endDateString, isOverview]);
 
   useEffect(() => {
-    loadInitialTransactions();
-  }, [loadInitialTransactions]);
+    loadTransactions();
+  }, [loadTransactions]);
+
+  const filteredTransactions = useMemo(() => {
+    let filtered = filterTransactions(
+      transactions,
+      transactionTypes,
+      currencies,
+    );
+    if (debouncedSearchTerm) {
+      filtered = searchTransactions(filtered, debouncedSearchTerm);
+    }
+    return filtered;
+  }, [transactions, transactionTypes, currencies, debouncedSearchTerm]);
+
+  const displayedTransactions = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    return filteredTransactions.slice(start, end);
+  }, [filteredTransactions, currentPage]);
+
+  const totalTransactions = filteredTransactions.length;
+  const totalPages = Math.ceil(totalTransactions / ITEMS_PER_PAGE);
+
+  const loadTransactionsPage = useCallback((page: number) => {
+    setCurrentPage(page);
+  }, []);
 
   const dashboardData = useMemo(() => {
     let totalBalance = 0;
@@ -99,7 +86,7 @@ export function useTransactions() {
     let expenses = 0;
 
     // biome-ignore lint/complexity/noForEach: <explanation>
-    allTransactions.forEach((transaction) => {
+    filteredTransactions.forEach((transaction) => {
       const amount = Number.parseFloat(transaction.amount);
       if (transaction.transaction_type === "deposit") {
         income += amount;
@@ -111,14 +98,14 @@ export function useTransactions() {
     });
 
     return { totalBalance, income, expenses };
-  }, [allTransactions]);
+  }, [filteredTransactions]);
 
   const moneyFlowData = useMemo(() => {
     const dailyData: Record<number, { deposits: number; withdrawals: number }> =
       {};
 
     // biome-ignore lint/complexity/noForEach: <explanation>
-    allTransactions.forEach((transaction) => {
+    filteredTransactions.forEach((transaction) => {
       const date = new Date(transaction.date).setHours(0, 0, 0, 0);
       if (!dailyData[date]) {
         dailyData[date] = { deposits: 0, withdrawals: 0 };
@@ -139,24 +126,31 @@ export function useTransactions() {
         withdrawals: data.withdrawals,
       }))
       .sort((a, b) => a.date - b.date);
-  }, [allTransactions]);
+  }, [filteredTransactions]);
 
   const loadMoreTransactions = useCallback(() => {
-    if (!isLoading) {
-      loadTransactionsPage(currentPage + 1);
+    if (!isLoading && currentPage < totalPages) {
+      setCurrentPage((prevPage) => prevPage + 1);
     }
-  }, [isLoading, currentPage, loadTransactionsPage]);
+  }, [isLoading, currentPage, totalPages]);
+
+  const loadInitialTransactions = useCallback(async () => {
+    await loadTransactions();
+    setCurrentPage(1);
+  }, [loadTransactions]);
 
   return {
     displayedTransactions,
     isLoading,
     currentPage,
     totalTransactions,
-    totalPages: Math.ceil(totalTransactions / ITEMS_PER_PAGE),
+    totalPages,
     loadInitialTransactions,
     loadTransactionsPage,
-    loadMoreTransactions,
+    setSearchTerm,
+    searchTerm,
     dashboardData,
     moneyFlowData,
+    loadMoreTransactions,
   };
 }

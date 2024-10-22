@@ -15,6 +15,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { FiChevronDown, FiLogOut, FiUser } from "react-icons/fi";
+import { useAuth } from "../hooks/useAuth";
 
 interface UserCardProps {
   name: string;
@@ -33,6 +34,12 @@ export default function UserCard({
   onLogout,
   isLoading = false,
 }: UserCardProps) {
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+  };
+
   return (
     <Menu placement="bottom-end" offset={[40, 0]}>
       {({ isOpen }) => (
@@ -92,7 +99,7 @@ export default function UserCard({
               </MenuItem>
               <MenuItem
                 icon={<FiLogOut />}
-                onClick={onLogout}
+                onClick={handleLogout}
                 fontSize={13}
                 textColor={"red.600"}
               >
