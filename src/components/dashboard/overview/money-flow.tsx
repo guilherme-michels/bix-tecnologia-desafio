@@ -116,7 +116,7 @@ export function MoneyFlow({ data = [] }: MoneyFlowProps) {
       borderColor="gray.200"
       borderRadius="lg"
       p="6"
-      height="100%"
+      height="550px"
       bg="white"
       boxShadow="sm"
     >

@@ -21,7 +21,7 @@ const filterOptions: FilterOption[] = [
     options: ["Depósito", "Saque"],
     valueMap: {
       Depósito: "deposit",
-      Saque: "withdrawal",
+      Saque: "withdraw",
     },
   },
 ];

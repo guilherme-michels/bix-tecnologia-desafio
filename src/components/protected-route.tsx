@@ -1,25 +1,35 @@
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, checkAuth } = useAuth();
   const router = useRouter();
+  const [isChecking, setIsChecking] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
-    if (!loading && !user) {
-      console.log("ProtectedRoute: Redirecionando para /auth");
-      router.push("/auth");
-    }
-  }, [user, loading, router]);
+    const verifyAuth = async () => {
+      setIsChecking(true);
+      const isAuthenticated = await checkAuth();
+      if (!isAuthenticated) {
+        router.replace("/auth");
+      } else {
+        setIsAuthorized(true);
+      }
+      setIsChecking(false);
+    };
 
-  if (loading) {
-    console.log("ProtectedRoute: Carregando...");
+    if (!loading) {
+      verifyAuth();
+    }
+  }, [loading, checkAuth, router]);
+
+  if (loading || isChecking) {
     return <div>Carregando...</div>;
   }
 
-  if (!user) {
-    console.log("ProtectedRoute: Usuário não autenticado");
+  if (!isAuthorized) {
     return null;
   }
 

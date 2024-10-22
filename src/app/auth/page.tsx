@@ -33,18 +33,34 @@ export default function AuthPage() {
 
   const bgColor = useColorModeValue("gray.50", "gray.800");
   const textColor = useColorModeValue("gray.600", "gray.200");
+  const boxBgColor = useColorModeValue("white", "gray.700");
 
   return (
     <Flex minHeight="100vh" width="full">
       <Toaster position="top-right" />
-      <Box flex={1} position="relative" display={{ base: "none", md: "block" }}>
-        <Image
-          src="/login-image.jpg"
-          alt="Login"
-          layout="fill"
-          objectFit="cover"
-        />
-      </Box>
+      <Flex
+        flex={1}
+        position="relative"
+        display={{ base: "none", md: "flex" }}
+        bg="blue.500"
+        alignItems="center"
+        justifyContent="center"
+      >
+        <Box position="absolute" top={4} left={4} zIndex={1}>
+          <Heading size="md" color="white">
+            Bix Money
+          </Heading>
+        </Box>
+        <Box position="relative" width="300px" height="300px">
+          <Image
+            src="/financial-icon.png"
+            alt="Finanças e Negócios"
+            layout="fill"
+            objectFit="contain"
+            quality={100}
+          />
+        </Box>
+      </Flex>
 
       <Flex
         flex={1}
@@ -54,11 +70,18 @@ export default function AuthPage() {
         bg={bgColor}
         p={8}
       >
-        <Box width="full" maxWidth="400px">
-          <Box textAlign="center" mb={8}>
-            <Heading size="xl">Bem-vindo ao Bix Money</Heading>
+        <Box
+          width="full"
+          maxWidth="400px"
+          bg={boxBgColor}
+          p={8}
+          borderRadius="xl"
+          boxShadow="xl"
+        >
+          <Box mb={8}>
+            <Heading size="xl">Bem-vindo de volta</Heading>
             <Text mt={2} color={textColor}>
-              Entre para gerenciar suas finanças
+              Gerenciando finanças para um futuro próspero!
             </Text>
           </Box>
 
@@ -71,6 +94,8 @@ export default function AuthPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  bg={useColorModeValue("gray.100", "gray.600")}
+                  border="none"
                 />
               </FormControl>
               <FormControl>
@@ -80,6 +105,8 @@ export default function AuthPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  bg={useColorModeValue("gray.100", "gray.600")}
+                  border="none"
                 />
               </FormControl>
               <Button
@@ -89,6 +116,7 @@ export default function AuthPage() {
                 size="lg"
                 isLoading={loading}
                 loadingText="Entrando..."
+                mt={4}
               >
                 Entrar
               </Button>

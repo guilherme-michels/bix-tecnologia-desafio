@@ -80,16 +80,49 @@ export function loadAllTransactions(
 
 export function filterTransactions(
   transactions: Transaction[],
-  transactionTypes: string[],
-  currencies: string[],
+  filters: {
+    startDate?: number;
+    endDate?: number;
+    accounts?: string[];
+    industries?: string[];
+    states?: string[];
+    transactionTypes?: string[];
+    currencies?: string[];
+  },
 ): Transaction[] {
   return transactions.filter((transaction) => {
+    const dateMatch =
+      (!filters.startDate || transaction.date >= filters.startDate) &&
+      (!filters.endDate || transaction.date <= filters.endDate);
+    const accountMatch =
+      !filters.accounts ||
+      filters.accounts.length === 0 ||
+      filters.accounts.includes(transaction.account);
+    const industryMatch =
+      !filters.industries ||
+      filters.industries.length === 0 ||
+      filters.industries.includes(transaction.industry);
+    const stateMatch =
+      !filters.states ||
+      filters.states.length === 0 ||
+      filters.states.includes(transaction.state);
     const typeMatch =
-      transactionTypes.length === 0 ||
-      transactionTypes.includes(transaction.transaction_type);
+      !filters.transactionTypes ||
+      filters.transactionTypes.length === 0 ||
+      filters.transactionTypes.includes(transaction.transaction_type);
     const currencyMatch =
-      currencies.length === 0 || currencies.includes(transaction.currency);
-    return typeMatch && currencyMatch;
+      !filters.currencies ||
+      filters.currencies.length === 0 ||
+      filters.currencies.includes(transaction.currency);
+
+    return (
+      dateMatch &&
+      accountMatch &&
+      industryMatch &&
+      stateMatch &&
+      typeMatch &&
+      currencyMatch
+    );
   });
 }
 

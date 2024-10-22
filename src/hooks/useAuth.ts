@@ -18,35 +18,40 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
+  const checkAuth = useCallback(async () => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
+      return true;
     }
-
-    setLoading(false);
+    setUser(null);
+    return false;
   }, []);
 
+  useEffect(() => {
+    const initAuth = async () => {
+      await checkAuth();
+      setLoading(false);
+    };
+
+    initAuth();
+  }, [checkAuth]);
+
   const login = async (email: string, password: string) => {
-    console.log("Tentativa de login:", email, password);
     if (email === "a@a.com" && password === "teste123") {
-      console.log("Login bem-sucedido");
       setUser(mockUser);
       localStorage.setItem("user", JSON.stringify(mockUser));
       await router.push("/dashboard");
-
       return mockUser;
     }
-
     throw new Error("Credenciais inválidas");
   };
 
   const logout = useCallback(() => {
-    console.log("Logout realizado");
     setUser(null);
     localStorage.removeItem("user");
     router.push("/auth");
   }, [router]);
 
-  return { user, loading, login, logout };
+  return { user, loading, login, logout, checkAuth };
 }

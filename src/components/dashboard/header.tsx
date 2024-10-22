@@ -27,7 +27,7 @@ interface DashboardHeaderProps {
 const filterLabels: Record<string, string> = {
   transactionType: "Tipo de Transação",
   deposit: "Depósito",
-  withdrawal: "Saque",
+  withdraw: "Saque",
 };
 
 export function DashboardHeader({
@@ -62,12 +62,41 @@ export function DashboardHeader({
     }
   }, [searchParams]);
 
+  useEffect(() => {
+    const newParams = new URLSearchParams();
+
+    if (selectedDates.length === 2) {
+      newParams.set("startDate", formatDate(selectedDates[0]));
+      newParams.set("endDate", formatDate(selectedDates[1]));
+    }
+
+    // biome-ignore lint/complexity/noForEach: <explanation>
+    Object.entries(activeFilters).forEach(([key, values]) => {
+      // biome-ignore lint/complexity/noForEach: <explanation>
+      values.forEach((value) => newParams.append(key, value));
+    });
+
+    router.push(`/dashboard?${newParams.toString()}`);
+  }, [selectedDates, activeFilters, router]);
+
   const handleDateChange = (dates: Date[]) => {
     setSelectedDates(dates);
-    if (dates.length === 2) {
-      const startDate = formatDate(dates[0]);
-      const endDate = formatDate(dates[1]);
-      updateSearchParams({ ...activeFilters, startDate, endDate });
+  };
+
+  const handleFilterChange = (filters: Record<string, string[]>) => {
+    setActiveFilters(filters);
+  };
+
+  const removeFilter = (key: string, value: string) => {
+    if (key === "date") {
+      setSelectedDates([]);
+    } else {
+      const updatedFilters = { ...activeFilters };
+      updatedFilters[key] = updatedFilters[key].filter((v) => v !== value);
+      if (updatedFilters[key].length === 0) {
+        delete updatedFilters[key];
+      }
+      setActiveFilters(updatedFilters);
     }
   };
 
@@ -78,51 +107,6 @@ export function DashboardHeader({
   const parseBrazilianDate = (dateString: string): Date => {
     const [day, month, year] = dateString.split("/").map(Number);
     return new Date(year, month - 1, day);
-  };
-
-  const handleFilterChange = (filters: Record<string, string[]>) => {
-    setActiveFilters(filters);
-    const updatedFilters: Record<string, string | string[]> = { ...filters };
-    if (selectedDates.length === 2) {
-      updatedFilters.startDate = formatDate(selectedDates[0]);
-      updatedFilters.endDate = formatDate(selectedDates[1]);
-    }
-    updateSearchParams(updatedFilters);
-  };
-
-  const removeFilter = (key: string, value: string) => {
-    const updatedFilters = { ...activeFilters };
-    if (key === "date") {
-      setSelectedDates([]);
-    } else {
-      updatedFilters[key] = updatedFilters[key].filter((v) => v !== value);
-      if (updatedFilters[key].length === 0) {
-        delete updatedFilters[key];
-      }
-    }
-    setActiveFilters(updatedFilters);
-    updateSearchParams(updatedFilters, key === "date" ? [] : selectedDates);
-  };
-
-  const updateSearchParams = (
-    params: Record<string, string | string[]>,
-    dates: Date[] = selectedDates,
-  ) => {
-    const newParams = new URLSearchParams();
-    // biome-ignore lint/complexity/noForEach: <explanation>
-    Object.entries(params).forEach(([key, value]) => {
-      if (Array.isArray(value)) {
-        // biome-ignore lint/complexity/noForEach: <explanation>
-        value.forEach((v) => newParams.append(key, v));
-      } else if (value) {
-        newParams.append(key, value);
-      }
-    });
-    if (dates.length === 2) {
-      newParams.set("startDate", formatDate(dates[0]));
-      newParams.set("endDate", formatDate(dates[1]));
-    }
-    router.push(`/dashboard?${newParams.toString()}`);
   };
 
   const formatDateRange = (dates: Date[]): string => {

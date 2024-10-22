@@ -6,6 +6,7 @@ import {
   Input,
   InputGroup,
   InputLeftElement,
+  Select,
   Spinner,
   Table,
   TableContainer,
@@ -30,6 +31,9 @@ export const TransactionsTable: React.FC = () => {
     loadTransactionsPage,
     setSearchTerm,
     searchTerm,
+    setFilters,
+    filters,
+    allTransactions,
   } = useTransactions(false);
 
   const formatDateTime = (timestamp: number) => {
@@ -51,18 +55,101 @@ export const TransactionsTable: React.FC = () => {
     }).format(value);
   };
 
+  const uniqueAccounts = Array.from(
+    new Set(allTransactions.map((t) => t.account)),
+  );
+  const uniqueIndustries = Array.from(
+    new Set(allTransactions.map((t) => t.industry)),
+  );
+  const uniqueStates = Array.from(new Set(allTransactions.map((t) => t.state)));
+
+  const clearFilters = () => {
+    setFilters({
+      startDate: undefined,
+      endDate: undefined,
+      accounts: [],
+      industries: [],
+      states: [],
+      transactionTypes: [],
+      currencies: [],
+    });
+    setSearchTerm("");
+  };
+
   return (
     <Box>
-      <InputGroup mb={4}>
-        <InputLeftElement pointerEvents="none">
-          <FaSearch color="gray.300" />
-        </InputLeftElement>
-        <Input
-          placeholder="Buscar por conta ou indústria"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </InputGroup>
+      <Flex mb={4} alignItems="center" gap={2}>
+        <InputGroup maxWidth="400px">
+          <InputLeftElement pointerEvents="none">
+            <FaSearch color="gray.300" />
+          </InputLeftElement>
+          <Input
+            placeholder="Buscar por conta ou indústria"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </InputGroup>
+        <Select
+          placeholder="Conta"
+          onChange={(e) =>
+            setFilters({
+              ...filters,
+              // @ts-expect-error
+              accounts: e.target.value ? [e.target.value] : [],
+            })
+          }
+          maxWidth="200px"
+          value={filters.accounts[0] || ""}
+        >
+          <option value="">Todas as contas</option>
+          {uniqueAccounts.map((account) => (
+            <option key={account} value={account}>
+              {account}
+            </option>
+          ))}
+        </Select>
+        <Select
+          placeholder="Indústria"
+          onChange={(e) =>
+            setFilters({
+              ...filters,
+              // @ts-expect-error
+              industries: e.target.value ? [e.target.value] : [],
+            })
+          }
+          maxWidth="200px"
+          value={filters.industries[0] || ""}
+        >
+          <option value="">Todas as indústrias</option>
+          {uniqueIndustries.map((industry) => (
+            <option key={industry} value={industry}>
+              {industry}
+            </option>
+          ))}
+        </Select>
+        <Select
+          placeholder="Estado"
+          onChange={(e) =>
+            setFilters({
+              ...filters,
+              // @ts-expect-error
+              states: e.target.value ? [e.target.value] : [],
+            })
+          }
+          maxWidth="200px"
+          value={filters.states[0] || ""}
+        >
+          <option value="">Todos os estados</option>
+          {uniqueStates.map((state) => (
+            <option key={state} value={state}>
+              {state}
+            </option>
+          ))}
+        </Select>
+        <Button onClick={clearFilters} colorScheme="blue">
+          Limpar Filtros
+        </Button>
+      </Flex>
 
       <TableContainer>
         <Table variant="simple" size="md" layout="fixed">

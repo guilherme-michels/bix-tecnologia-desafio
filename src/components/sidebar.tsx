@@ -1,6 +1,14 @@
 "use client";
 
-import { Box, Flex, Icon, Spacer, Text, VStack } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  Heading,
+  Icon,
+  Spacer,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
 import { usePathname } from "next/navigation";
 import { FiHome } from "react-icons/fi";
 import { useAuth } from "../hooks/useAuth";
@@ -18,7 +26,6 @@ const SidebarItem = ({
   <Flex
     align="center"
     p="2"
-    mx="2"
     borderRadius="lg"
     as="fieldset"
     cursor="pointer"
@@ -55,18 +62,26 @@ export default function Sidebar() {
       borderRightWidth="1px"
       w="60"
     >
-      <VStack spacing={4} align="stretch" p={4}>
-        <Box px="4" pt="8">
-          <Text fontSize="2xl" fontWeight="medium" textAlign="center">
+      <VStack spacing={4} align="stretch">
+        <Box
+          py={4}
+          px={4}
+          bg="blue.500"
+          boxShadow="md"
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Heading size="md" color="white" textAlign="center">
             Bix Money
-          </Text>
+          </Heading>
         </Box>
 
-        <Box>
+        <Box px={4}>
           <UserCard name={user?.name || ""} isLoading={loading} />
         </Box>
 
-        <VStack spacing="1" align="stretch">
+        <VStack spacing="1" align="stretch" px={3}>
           <SidebarItem icon={FiHome} isActive={!!isDashboardActive}>
             Dashboard
           </SidebarItem>

@@ -30,13 +30,8 @@ const formatCurrency = (value: number): string => {
 };
 
 export function Overview() {
-  const {
-    displayedTransactions,
-    isLoading,
-    loadMoreTransactions,
-    dashboardData,
-    moneyFlowData,
-  } = useTransactions(true);
+  const { displayedTransactions, isLoading, dashboardData, moneyFlowData } =
+    useTransactions(true);
 
   const formatValue = useCallback((value: number | null) => {
     return value !== null ? formatCurrency(value) : "";
@@ -114,7 +109,6 @@ export function Overview() {
           <RecentTransactions
             transactions={displayedTransactions}
             isLoading={isLoading}
-            onLoadMore={loadMoreTransactions}
           />
         </GridItem>
       </Grid>

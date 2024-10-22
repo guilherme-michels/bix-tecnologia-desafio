@@ -15,7 +15,6 @@ import { FiAlertCircle, FiMinus, FiPlus } from "react-icons/fi";
 interface RecentTransactionsProps {
   transactions: Transaction[];
   isLoading: boolean;
-  onLoadMore: () => void;
 }
 
 const NoDataFound = () => (
@@ -30,7 +29,6 @@ const NoDataFound = () => (
 export function RecentTransactions({
   transactions,
   isLoading,
-  onLoadMore,
 }: RecentTransactionsProps) {
   const [displayedTransactions, setDisplayedTransactions] = useState<
     Transaction[]
@@ -40,27 +38,6 @@ export function RecentTransactions({
   useEffect(() => {
     setDisplayedTransactions(transactions);
   }, [transactions]);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !isLoading) {
-          onLoadMore();
-        }
-      },
-      { threshold: 1.0 },
-    );
-
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current);
-    }
-
-    return () => {
-      if (observerTarget.current) {
-        observer.unobserve(observerTarget.current);
-      }
-    };
-  }, [onLoadMore, isLoading]);
 
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);

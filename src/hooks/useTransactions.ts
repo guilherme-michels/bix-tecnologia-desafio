@@ -3,6 +3,7 @@ import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Transaction } from "../types/dashboard";
 import {
+  filterTransactions,
   loadAllTransactions,
   searchTransactions,
 } from "../utils/transactionUtils";
@@ -27,11 +28,23 @@ export function useTransactions(isOverview = false) {
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const searchParams = useSearchParams();
+  const [filters, setFilters] = useState({
+    startDate: undefined,
+    endDate: undefined,
+    accounts: [],
+    industries: [],
+    states: [],
+    transactionTypes: [],
+    currencies: [],
+  });
 
   const startDateString = searchParams?.get("startDate") ?? null;
   const endDateString = searchParams?.get("endDate") ?? null;
 
-  const transactionTypes = searchParams?.getAll("transactionType") || [];
+  const transactionTypes = useMemo(
+    () => searchParams?.getAll("transactionType") || [],
+    [searchParams],
+  );
 
   const loadInitialTransactions = useCallback(async () => {
     setIsLoading(true);
@@ -74,10 +87,10 @@ export function useTransactions(isOverview = false) {
       setIsLoading(true);
       const offset = (page - 1) * ITEMS_PER_PAGE;
 
-      let filteredTransactions = allTransactions;
+      let filteredTransactions = filterTransactions(allTransactions, filters);
       if (debouncedSearchTerm) {
         filteredTransactions = searchTransactions(
-          allTransactions,
+          filteredTransactions,
           debouncedSearchTerm,
         );
       }
@@ -91,7 +104,7 @@ export function useTransactions(isOverview = false) {
       setCurrentPage(page);
       setIsLoading(false);
     },
-    [allTransactions, debouncedSearchTerm],
+    [allTransactions, debouncedSearchTerm, filters],
   );
 
   useEffect(() => {
@@ -101,7 +114,7 @@ export function useTransactions(isOverview = false) {
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     loadTransactionsPage(1);
-  }, [debouncedSearchTerm, loadTransactionsPage]);
+  }, [debouncedSearchTerm, filters, loadTransactionsPage]);
 
   const dashboardData = useMemo(() => {
     let totalBalance = 0;
@@ -151,12 +164,6 @@ export function useTransactions(isOverview = false) {
       .sort((a, b) => a.date - b.date);
   }, [allTransactions]);
 
-  const loadMoreTransactions = useCallback(() => {
-    if (!isLoading) {
-      loadTransactionsPage(currentPage + 1);
-    }
-  }, [isLoading, currentPage, loadTransactionsPage]);
-
   return {
     displayedTransactions,
     allTransactions,
@@ -170,6 +177,7 @@ export function useTransactions(isOverview = false) {
     searchTerm,
     dashboardData,
     moneyFlowData,
-    loadMoreTransactions,
+    setFilters,
+    filters,
   };
 }
