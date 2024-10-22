@@ -126,10 +126,13 @@ export function MoneyFlow({ data = [] }: MoneyFlowProps) {
       borderRadius="lg"
       p={{ base: 4, md: 6 }}
       height={{ base: "auto", md: "550px" }}
+      maxHeight="550px"
       bg="white"
       boxShadow="sm"
       overflow="hidden"
       width="100%"
+      maxWidth="1200px"
+      mx="auto"
     >
       <Flex
         justifyContent="space-between"
