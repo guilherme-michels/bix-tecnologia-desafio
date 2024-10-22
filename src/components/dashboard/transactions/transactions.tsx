@@ -17,6 +17,7 @@ import {
   Thead,
   Tr,
 } from "@chakra-ui/react";
+import { useBreakpointValue } from "@chakra-ui/react";
 import type React from "react";
 import { FaSearch } from "react-icons/fa";
 import { FiAlertCircle } from "react-icons/fi";
@@ -36,8 +37,15 @@ export const TransactionsTable: React.FC = () => {
     allTransactions,
   } = useTransactions(false);
 
-  const formatDateTime = (timestamp: number) => {
+  const formatDateTime = (timestamp: number, isMobile: boolean) => {
     const date = new Date(timestamp);
+    if (isMobile) {
+      return date.toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "2-digit",
+      });
+    }
     return date.toLocaleString("pt-BR", {
       year: "numeric",
       month: "2-digit",
@@ -78,17 +86,25 @@ export const TransactionsTable: React.FC = () => {
     setSearchTerm("");
   };
 
+  const isMobile = useBreakpointValue({ base: true, md: false });
+
   return (
     <Box>
-      <Flex mb={4} alignItems="center" gap={2}>
-        <InputGroup maxWidth="400px">
+      <Flex
+        mb={4}
+        flexDirection={{ base: "column", md: "row" }}
+        alignItems={{ base: "stretch", md: "center" }}
+        gap={2}
+      >
+        <InputGroup maxWidth={{ base: "100%", md: "200px" }}>
           <InputLeftElement pointerEvents="none">
             <FaSearch color="gray.300" />
           </InputLeftElement>
           <Input
-            placeholder="Buscar por conta ou indústria"
+            placeholder="Buscar"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            fontSize={isMobile ? "sm" : "md"}
           />
         </InputGroup>
         <Select
@@ -96,12 +112,12 @@ export const TransactionsTable: React.FC = () => {
           onChange={(e) =>
             setFilters({
               ...filters,
-              // @ts-expect-error
               accounts: e.target.value ? [e.target.value] : [],
             })
           }
-          maxWidth="200px"
+          maxWidth={{ base: "100%", md: "150px" }}
           value={filters.accounts[0] || ""}
+          fontSize={isMobile ? "sm" : "md"}
         >
           <option value="">Todas as contas</option>
           {uniqueAccounts.map((account) => (
@@ -115,12 +131,12 @@ export const TransactionsTable: React.FC = () => {
           onChange={(e) =>
             setFilters({
               ...filters,
-              // @ts-expect-error
               industries: e.target.value ? [e.target.value] : [],
             })
           }
-          maxWidth="200px"
+          maxWidth={{ base: "100%", md: "150px" }}
           value={filters.industries[0] || ""}
+          fontSize={isMobile ? "sm" : "md"}
         >
           <option value="">Todas as indústrias</option>
           {uniqueIndustries.map((industry) => (
@@ -134,12 +150,12 @@ export const TransactionsTable: React.FC = () => {
           onChange={(e) =>
             setFilters({
               ...filters,
-              // @ts-expect-error
               states: e.target.value ? [e.target.value] : [],
             })
           }
-          maxWidth="200px"
+          maxWidth={{ base: "100%", md: "150px" }}
           value={filters.states[0] || ""}
+          fontSize={isMobile ? "sm" : "md"}
         >
           <option value="">Todos os estados</option>
           {uniqueStates.map((state) => (
@@ -148,23 +164,27 @@ export const TransactionsTable: React.FC = () => {
             </option>
           ))}
         </Select>
-        <Button onClick={clearFilters} colorScheme="blue">
+        <Button
+          onClick={clearFilters}
+          colorScheme="blue"
+          width={{ base: "100%", md: "auto" }}
+          fontSize={isMobile ? "sm" : "md"}
+          size={isMobile ? "sm" : "md"}
+        >
           Limpar Filtros
         </Button>
       </Flex>
 
-      <TableContainer>
-        <Table variant="simple" size="md" layout="fixed">
+      <Box overflowX="auto">
+        <Table variant="simple" size={isMobile ? "sm" : "md"}>
           <Thead>
             <Tr>
-              <Th width="20%">Data e Hora</Th>
-              <Th width="20%">Conta</Th>
-              <Th width="20%">Indústria</Th>
-              <Th width="10%">Tipo</Th>
-              <Th width="15%" isNumeric>
-                Valor
-              </Th>
-              <Th width="15%">Estado</Th>
+              <Th>Data</Th>
+              <Th>Conta</Th>
+              {!isMobile && <Th>Indústria</Th>}
+              {!isMobile && <Th>Tipo</Th>}
+              <Th isNumeric>Valor</Th>
+              {!isMobile && <Th>Estado</Th>}
             </Tr>
           </Thead>
           <Tbody>
@@ -196,63 +216,48 @@ export const TransactionsTable: React.FC = () => {
               displayedTransactions.map((transaction, index) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                 <Tr key={index}>
-                  <Td>
-                    <Text fontSize="md" isTruncated>
-                      {formatDateTime(transaction.date)}
-                    </Text>
-                  </Td>
-                  <Td>
-                    <Text fontSize="md" isTruncated>
-                      {transaction.account}
-                    </Text>
-                  </Td>
-                  <Td>
-                    <Text fontSize="md" isTruncated>
-                      {transaction.industry}
-                    </Text>
-                  </Td>
-                  <Td>
-                    <Badge
-                      colorScheme={
-                        transaction.transaction_type === "deposit"
-                          ? "green"
-                          : "red"
-                      }
-                    >
-                      {transaction.transaction_type === "deposit"
-                        ? "Depósito"
-                        : "Saque"}
-                    </Badge>
-                  </Td>
+                  <Td>{formatDateTime(transaction.date, isMobile)}</Td>
+                  <Td>{transaction.account}</Td>
+                  {!isMobile && <Td>{transaction.industry}</Td>}
+                  {!isMobile && (
+                    <Td>
+                      <Badge
+                        colorScheme={
+                          transaction.transaction_type === "deposit"
+                            ? "green"
+                            : "red"
+                        }
+                      >
+                        {transaction.transaction_type === "deposit"
+                          ? "Dep"
+                          : "Saq"}
+                      </Badge>
+                    </Td>
+                  )}
                   <Td isNumeric>
                     <Text
-                      fontSize="md"
-                      fontWeight={"bold"}
+                      fontSize="sm"
+                      fontWeight="bold"
                       color={
                         transaction.transaction_type === "deposit"
                           ? "green"
                           : "red"
                       }
-                      isTruncated
                     >
                       {formatCurrency(transaction.amount, transaction.currency)}
                     </Text>
                   </Td>
-                  <Td>
-                    <Text fontSize="md" isTruncated>
-                      {transaction.state}
-                    </Text>
-                  </Td>
+                  {!isMobile && <Td>{transaction.state}</Td>}
                 </Tr>
               ))
             )}
           </Tbody>
         </Table>
-      </TableContainer>
+      </Box>
 
       {!isLoading && displayedTransactions.length > 0 && (
         <Flex justifyContent="space-between" alignItems="center" mt={4}>
-          <Text>
+          <Text fontSize="sm">
             Página {currentPage} de {totalPages}
           </Text>
           <Flex>
@@ -260,12 +265,14 @@ export const TransactionsTable: React.FC = () => {
               onClick={() => loadTransactionsPage(currentPage - 1)}
               isDisabled={currentPage === 1}
               mr={2}
+              size="sm"
             >
               Anterior
             </Button>
             <Button
               onClick={() => loadTransactionsPage(currentPage + 1)}
               isDisabled={currentPage === totalPages}
+              size="sm"
             >
               Próxima
             </Button>

@@ -82,13 +82,14 @@ const TransactionItem = ({ transaction }: { transaction: Transaction }) => (
     borderRadius="md"
     borderColor="blackAlpha.200"
     borderWidth={1}
-    height={{ base: "80px", md: "100px" }}
+    height={{ base: "auto", md: "100px" }}
     flexDirection={{ base: "column", md: "row" }}
   >
-    <HStack spacing={3} mb={{ base: 2, md: 0 }}>
+    <HStack spacing={3} mb={{ base: 2, md: 0 }} width="100%">
       <Box
         width={{ base: "24px", md: "30px" }}
         height={{ base: "24px", md: "30px" }}
+        minWidth={{ base: "24px", md: "30px" }}
         borderRadius="md"
         bg={
           transaction.transaction_type === "deposit" ? "green.100" : "red.100"
@@ -103,35 +104,39 @@ const TransactionItem = ({ transaction }: { transaction: Transaction }) => (
           <FiMinus color="red" />
         )}
       </Box>
-      <VStack align="start" spacing={0}>
-        <Text
-          fontWeight="medium"
-          fontSize={{ base: "xs", md: "sm" }}
-          color={
-            transaction.transaction_type === "deposit" ? "green.500" : "red.500"
-          }
-        >
-          {formatCurrency(transaction.amount, transaction.currency)}
-        </Text>
-        <Text fontSize={{ base: "2xs", md: "xs" }} color="gray.600" mt={1}>
-          {transaction.account}
-        </Text>
+      <VStack align="start" spacing={0} width="100%">
+        <Flex justify="space-between" width="100%" alignItems="center">
+          <Text
+            fontWeight="medium"
+            fontSize={{ base: "sm", md: "md" }}
+            color={
+              transaction.transaction_type === "deposit"
+                ? "green.500"
+                : "red.500"
+            }
+          >
+            {formatCurrency(transaction.amount, transaction.currency)}
+          </Text>
+          <Text fontSize={{ base: "xs", md: "sm" }} color="gray.600">
+            {formatDate(transaction.date)}
+          </Text>
+        </Flex>
+        <Flex justify="space-between" width="100%" alignItems="center" mt={1}>
+          <Text fontSize={{ base: "xs", md: "sm" }} color="gray.600">
+            {transaction.account}
+          </Text>
+          <Badge
+            colorScheme="blackAlpha"
+            fontSize={{ base: "2xs", md: "xs" }}
+            px={1}
+            border={"1px"}
+            borderColor={"blackAlpha.200"}
+          >
+            {transaction.industry}
+          </Badge>
+        </Flex>
       </VStack>
     </HStack>
-    <VStack align={{ base: "start", md: "end" }} spacing={2}>
-      <Text fontSize={{ base: "2xs", md: "xs" }} color="gray.600">
-        {formatDate(transaction.date)}
-      </Text>
-      <Badge
-        colorScheme="blackAlpha"
-        fontSize={{ base: "3xs", md: "2xs" }}
-        px={1}
-        border={"1px"}
-        borderColor={"blackAlpha.200"}
-      >
-        {transaction.industry}
-      </Badge>
-    </VStack>
   </Flex>
 );
 

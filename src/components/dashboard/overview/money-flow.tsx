@@ -1,4 +1,5 @@
 import { Box, Circle, Flex, HStack, Text, VStack } from "@chakra-ui/react";
+import { useBreakpointValue } from "@chakra-ui/react";
 import {
   differenceInDays,
   eachDayOfInterval,
@@ -46,11 +47,20 @@ export function MoneyFlow({ data = [] }: MoneyFlowProps) {
     return format(date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
   };
 
+  const formatDateShort = (date: Date | null) => {
+    if (!date) return "";
+    return format(date, "dd/MM/yy");
+  };
+
   const startDate =
     parseDate(startDateParam) || new Date(new Date().getFullYear(), 0, 1);
   const endDate = parseDate(endDateParam) || new Date();
 
   const getDescription = () => {
+    const isMobile = useBreakpointValue({ base: true, md: false });
+    if (isMobile) {
+      return `${formatDateShort(startDate)} - ${formatDateShort(endDate)}`;
+    }
     return `Período de ${formatDate(startDate)} a ${formatDate(endDate)}`;
   };
 
@@ -107,85 +117,105 @@ export function MoneyFlow({ data = [] }: MoneyFlowProps) {
     return tick;
   };
 
+  const chartHeight = useBreakpointValue({ base: 300, md: 400 });
+
   return (
     <Box
       border="1px"
       borderColor="gray.200"
       borderRadius="lg"
-      p="6"
-      height="550px"
+      p={{ base: 4, md: 6 }}
+      height={{ base: "auto", md: "550px" }}
       bg="white"
       boxShadow="sm"
+      overflow="hidden"
     >
-      <Flex justifyContent="space-between" alignItems="flex-start" mb={6}>
-        <VStack align="start" spacing={1}>
-          <Text fontSize="2xl" fontWeight="bold">
+      <Flex
+        justifyContent="space-between"
+        alignItems="flex-start"
+        mb={{ base: 2, md: 6 }}
+        flexDirection={{ base: "column", sm: "row" }}
+      >
+        <VStack align="start" spacing={0} mb={{ base: 2, sm: 0 }}>
+          <Text
+            fontSize={{ base: "xl", md: "xl", lg: "2xl" }}
+            fontWeight="bold"
+          >
             Fluxo Monetário
           </Text>
-          <Text fontSize="sm" color="gray.600">
+          <Text fontSize={{ base: "xs", md: "sm" }} color="gray.600">
             {getDescription()}
           </Text>
         </VStack>
-        <HStack spacing={4}>
+        <HStack
+          spacing={4}
+          flexWrap="wrap"
+          justifyContent={{ base: "flex-start", sm: "flex-end" }}
+        >
           <HStack>
-            <Circle size="10px" bg="#48BB78" />
-            <Text fontSize="sm" color="#48BB78">
+            <Circle size={{ base: "8px", md: "10px" }} bg="#48BB78" />
+            <Text fontSize={{ base: "xs", md: "sm" }} color="#48BB78">
               Receitas
             </Text>
           </HStack>
           <HStack>
-            <Circle size="10px" bg="#F56565" />
-            <Text fontSize="sm" color="#F56565">
+            <Circle size={{ base: "8px", md: "10px" }} bg="#F56565" />
+            <Text fontSize={{ base: "xs", md: "sm" }} color="#F56565">
               Despesas
             </Text>
           </HStack>
         </HStack>
       </Flex>
-      <ResponsiveContainer width="100%" height={400}>
-        <LineChart
-          data={chartData}
-          margin={{
-            top: 20,
-            right: 40,
-            left: 20,
-            bottom: 20,
-          }}
-        >
-          <XAxis
-            dataKey="date"
-            axisLine={false}
-            tickLine={false}
-            dy={10}
-            tickFormatter={customTickFormatter}
-            interval="preserveStartEnd"
-          />
-          <Tooltip
-            formatter={(value, name) => [formatCurrency(value as number), name]}
-            labelStyle={{ fontWeight: "bold" }}
-            contentStyle={{
-              borderRadius: "8px",
-              border: "none",
-              boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+      <Box width="100%" height={chartHeight}>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart
+            data={chartData}
+            margin={{
+              top: 20,
+              right: 20,
+              left: 0,
+              bottom: 20,
             }}
-          />
-          <Line
-            type="monotone"
-            dataKey="deposits"
-            stroke="#48BB78"
-            strokeWidth={4}
-            dot={false}
-            name="Receitas"
-          />
-          <Line
-            type="monotone"
-            dataKey="withdrawals"
-            stroke="#F56565"
-            strokeWidth={4}
-            dot={false}
-            name="Despesas"
-          />
-        </LineChart>
-      </ResponsiveContainer>
+          >
+            <XAxis
+              dataKey="date"
+              axisLine={false}
+              tickLine={false}
+              dy={10}
+              tickFormatter={customTickFormatter}
+              interval="preserveStartEnd"
+            />
+            <Tooltip
+              formatter={(value, name) => [
+                formatCurrency(value as number),
+                name,
+              ]}
+              labelStyle={{ fontWeight: "bold" }}
+              contentStyle={{
+                borderRadius: "8px",
+                border: "none",
+                boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+              }}
+            />
+            <Line
+              type="monotone"
+              dataKey="deposits"
+              stroke="#48BB78"
+              strokeWidth={4}
+              dot={false}
+              name="Receitas"
+            />
+            <Line
+              type="monotone"
+              dataKey="withdrawals"
+              stroke="#F56565"
+              strokeWidth={4}
+              dot={false}
+              name="Despesas"
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </Box>
       {chartData.length === 0 && (
         <Text textAlign="center" color="gray.500" mt={4}>
           Nenhum dado disponível para o período selecionado.
