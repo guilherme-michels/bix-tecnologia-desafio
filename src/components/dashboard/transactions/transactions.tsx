@@ -43,6 +43,7 @@ export const TransactionsTable: React.FC = () => {
     setSearchTerm,
     searchTerm,
     allTransactions,
+    setFilters,
   } = useTransactions(false);
 
   const formatDateTime = (timestamp: number, isMobile: boolean) => {
@@ -89,14 +90,24 @@ export const TransactionsTable: React.FC = () => {
     currencies: [],
   });
 
+  const applyFilters = (newFilters: Partial<Filters>) => {
+    const updatedFilters: Filters = { ...localFilters, ...newFilters };
+    setLocalFilters(updatedFilters);
+    // @ts-expect-error
+    setFilters(updatedFilters);
+  };
+
   const clearFilters = () => {
-    setLocalFilters({
+    const emptyFilters: Filters = {
       accounts: [],
       industries: [],
       states: [],
       transactionTypes: [],
       currencies: [],
-    });
+    };
+    setLocalFilters(emptyFilters);
+    // @ts-expect-error
+    setFilters(emptyFilters);
     setSearchTerm("");
   };
 
@@ -124,8 +135,7 @@ export const TransactionsTable: React.FC = () => {
         <Select
           placeholder="Conta"
           onChange={(e) =>
-            setLocalFilters({
-              ...localFilters,
+            applyFilters({
               accounts: e.target.value ? [e.target.value] : [],
             })
           }
@@ -143,8 +153,7 @@ export const TransactionsTable: React.FC = () => {
         <Select
           placeholder="Indústria"
           onChange={(e) =>
-            setLocalFilters({
-              ...localFilters,
+            applyFilters({
               industries: e.target.value ? [e.target.value] : [],
             })
           }
@@ -162,8 +171,7 @@ export const TransactionsTable: React.FC = () => {
         <Select
           placeholder="Estado"
           onChange={(e) =>
-            setLocalFilters({
-              ...localFilters,
+            applyFilters({
               states: e.target.value ? [e.target.value] : [],
             })
           }
