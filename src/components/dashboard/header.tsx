@@ -17,7 +17,7 @@ import {
 import { RangeDatepicker } from "chakra-dayzed-datepicker";
 import { format } from "date-fns";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { DashboardFilter } from "./dashboard-filter";
 
 interface DashboardHeaderProps {
@@ -41,7 +41,6 @@ export function DashboardHeader({
   const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>(
     {},
   );
-  const isMobile = useBreakpointValue({ base: true, md: false });
 
   useEffect(() => {
     const startDate = searchParams?.get("startDate");
@@ -116,6 +115,14 @@ export function DashboardHeader({
     const [start, end] = dates;
     return `${formatDate(start)} - ${formatDate(end)}`;
   };
+
+  const handleTabChange = useCallback(
+    (index: number) => {
+      const tabs = ["overview", "transactions", "budget"];
+      onTabChange(tabs[index]);
+    },
+    [onTabChange],
+  );
 
   return (
     <Box mb="6">
@@ -236,9 +243,7 @@ export function DashboardHeader({
         variant="unstyled"
         colorScheme="black"
         index={["overview", "transactions", "budget"].indexOf(activeTab)}
-        onChange={(index) =>
-          onTabChange(["overview", "transactions", "budget"][index])
-        }
+        onChange={handleTabChange}
       >
         <TabList>
           <Tab fontSize={{ base: "sm", md: "md" }}>Visão Geral</Tab>

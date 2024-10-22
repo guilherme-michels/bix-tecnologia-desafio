@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading, checkAuth } = useAuth();
+  const { loading, checkAuth } = useAuth();
   const router = useRouter();
   const [isChecking, setIsChecking] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);

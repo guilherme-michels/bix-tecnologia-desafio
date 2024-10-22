@@ -9,7 +9,6 @@ import {
   Select,
   Spinner,
   Table,
-  TableContainer,
   Tbody,
   Td,
   Text,
@@ -43,8 +42,6 @@ export const TransactionsTable: React.FC = () => {
     loadTransactionsPage,
     setSearchTerm,
     searchTerm,
-    setFilters,
-    filters,
     allTransactions,
   } = useTransactions(false);
 
