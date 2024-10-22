@@ -1,9 +1,17 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
-import { Box, Center, Flex, Spinner } from "@chakra-ui/react";
+import {
+  Box,
+  Center,
+  Flex,
+  IconButton,
+  Spinner,
+  useDisclosure,
+} from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { FiMenu } from "react-icons/fi";
 import Sidebar from "../../components/sidebar";
 
 export default function DashboardLayout({
@@ -14,6 +22,7 @@ export default function DashboardLayout({
   const { user, loading, checkAuth } = useAuth();
   const router = useRouter();
   const [isChecking, setIsChecking] = useState(true);
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
     const verifyAuth = async () => {
@@ -44,9 +53,23 @@ export default function DashboardLayout({
 
   return (
     <Flex h="100vh">
-      <Sidebar />
-      <Box flex="1" ml="60" py={2} px={4} overflowY="auto">
-        {children}
+      <Sidebar isOpen={isOpen} onClose={onClose} />
+      <Box flex="1" ml={{ base: 0, lg: "60" }} transition="margin-left 0.3s">
+        <Flex
+          mt={2}
+          ml={2}
+          alignItems="center"
+          display={{ base: "flex", lg: "none" }}
+        >
+          <IconButton
+            aria-label="Abrir menu"
+            icon={<FiMenu />}
+            onClick={onOpen}
+          />
+        </Flex>
+        <Box py={2} px={4} overflowY="auto">
+          {children}
+        </Box>
       </Box>
     </Flex>
   );

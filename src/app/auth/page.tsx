@@ -20,14 +20,18 @@ import { useAuth } from "../../hooks/useAuth";
 export default function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { login, loading } = useAuth();
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoggingIn(true);
     try {
       await login(email, password);
     } catch (err) {
       toast.error("Credenciais inválidas");
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
@@ -114,7 +118,7 @@ export default function AuthPage() {
                 colorScheme="blue"
                 width="full"
                 size="lg"
-                isLoading={loading}
+                isLoading={isLoggingIn}
                 loadingText="Entrando..."
                 mt={4}
               >

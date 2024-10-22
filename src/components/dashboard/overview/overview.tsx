@@ -14,6 +14,8 @@ import {
   Stat,
   StatLabel,
   StatNumber,
+  Text,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import { useCallback } from "react";
 import { useTransactions } from "../../../hooks/useTransactions";
@@ -43,27 +45,45 @@ export function Overview() {
     return value !== null ? formatCurrency(value) : "";
   }, []);
 
+  const statFontSize = useBreakpointValue({ base: "sm", md: "md", lg: "2xl" });
+  const iconSize = useBreakpointValue({ base: "3", md: "4" });
+  const gridTemplateColumns = useBreakpointValue({
+    base: "1fr",
+    md: "1fr 1fr",
+    lg: "2fr 1fr",
+  });
+
   return (
     <Box>
-      <SimpleGrid columns={{ base: 1, md: 3 }} spacing="6" mb="8">
+      <SimpleGrid
+        columns={{ base: 1, sm: 2, md: 3 }}
+        spacing={{ base: 4, md: 6 }}
+        mb={{ base: 6, md: 8 }}
+      >
         <Stat
           position="relative"
           border="1px"
           borderColor="gray.200"
           borderRadius="lg"
-          p="4"
+          p={{ base: 3, md: 4 }}
         >
-          <Box position="absolute" top="4" right="4">
-            <Icon as={FiDollarSign} boxSize="4" />
+          <Box
+            position="absolute"
+            top={{ base: 3, md: 4 }}
+            right={{ base: 3, md: 4 }}
+          >
+            <Icon as={FiDollarSign} boxSize={iconSize} />
           </Box>
-          <StatLabel>Saldo Total</StatLabel>
+          <StatLabel fontSize={"sm"}>Saldo Total</StatLabel>
           <Skeleton
             isLoaded={!isLoading}
-            height="36px"
+            height={{ base: "24px", md: "36px" }}
             startColor="blackAlpha.100"
             endColor="blackAlpha.200"
           >
-            <StatNumber>{formatValue(dashboardData.totalBalance)}</StatNumber>
+            <StatNumber fontSize={statFontSize}>
+              {formatValue(dashboardData.totalBalance)}
+            </StatNumber>
           </Skeleton>
         </Stat>
         <Stat
@@ -71,19 +91,25 @@ export function Overview() {
           border="1px"
           borderColor="gray.200"
           borderRadius="lg"
-          p="4"
+          p={{ base: 3, md: 4 }}
         >
-          <Box position="absolute" top="4" right="4">
-            <Icon as={FiArrowUpCircle} boxSize="4" />
+          <Box
+            position="absolute"
+            top={{ base: 3, md: 4 }}
+            right={{ base: 3, md: 4 }}
+          >
+            <Icon as={FiArrowUpCircle} boxSize={iconSize} />
           </Box>
-          <StatLabel>Receitas</StatLabel>
+          <StatLabel fontSize={"sm"}>Receitas</StatLabel>
           <Skeleton
             isLoaded={!isLoading}
-            height="36px"
+            height={{ base: "24px", md: "36px" }}
             startColor="blackAlpha.100"
             endColor="blackAlpha.200"
           >
-            <StatNumber>{formatValue(dashboardData.income)}</StatNumber>
+            <StatNumber fontSize={statFontSize}>
+              {formatValue(dashboardData.income)}
+            </StatNumber>
           </Skeleton>
         </Stat>
         <Stat
@@ -91,23 +117,29 @@ export function Overview() {
           border="1px"
           borderColor="gray.200"
           borderRadius="lg"
-          p="4"
+          p={{ base: 3, md: 4 }}
         >
-          <Box position="absolute" top="4" right="4">
-            <Icon as={FiArrowDownCircle} boxSize="4" />
+          <Box
+            position="absolute"
+            top={{ base: 3, md: 4 }}
+            right={{ base: 3, md: 4 }}
+          >
+            <Icon as={FiArrowDownCircle} boxSize={iconSize} />
           </Box>
-          <StatLabel>Despesas</StatLabel>
+          <StatLabel fontSize={"sm"}>Despesas</StatLabel>
           <Skeleton
             isLoaded={!isLoading}
-            height="36px"
+            height={{ base: "24px", md: "36px" }}
             startColor="blackAlpha.100"
             endColor="blackAlpha.200"
           >
-            <StatNumber>{formatValue(dashboardData.expenses)}</StatNumber>
+            <StatNumber fontSize={statFontSize}>
+              {formatValue(dashboardData.expenses)}
+            </StatNumber>
           </Skeleton>
         </Stat>
       </SimpleGrid>
-      <Grid templateColumns={{ base: "1fr", lg: "2fr 1fr" }} gap={6}>
+      <Grid templateColumns={gridTemplateColumns} gap={{ base: 4, md: 6 }}>
         <GridItem>
           <MoneyFlow data={moneyFlowData} />
         </GridItem>

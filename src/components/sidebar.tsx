@@ -2,12 +2,18 @@
 
 import {
   Box,
+  Drawer,
+  DrawerBody,
+  DrawerCloseButton,
+  DrawerContent,
+  DrawerOverlay,
   Flex,
   Heading,
   Icon,
   Spacer,
   Text,
   VStack,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import { usePathname } from "next/navigation";
 import { FiHome } from "react-icons/fi";
@@ -40,11 +46,57 @@ const SidebarItem = ({
   </Flex>
 );
 
-export default function Sidebar() {
-  const { user, logout, loading } = useAuth();
+export default function Sidebar({
+  isOpen,
+  onClose,
+}: { isOpen: boolean; onClose: () => void }) {
+  const { user, loading } = useAuth();
   const pathname = usePathname();
-  // biome-ignore lint/complexity/useOptionalChain: <explanation>
-  const isDashboardActive = pathname && pathname.startsWith("/dashboard");
+  const isDashboardActive = pathname?.startsWith("/dashboard");
+  const isMobile = useBreakpointValue({ base: true, lg: false });
+
+  const SidebarContent = (
+    <VStack spacing={4} align="stretch">
+      <Box
+        py={4}
+        px={4}
+        bg="blue.500"
+        boxShadow="md"
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+      >
+        <Heading size="md" color="white" textAlign="center">
+          Bix Money
+        </Heading>
+      </Box>
+
+      <Box px={4}>
+        <UserCard name={user?.name || ""} isLoading={loading} />
+      </Box>
+
+      <VStack spacing="1" align="stretch" px={3}>
+        <SidebarItem icon={FiHome} isActive={!!isDashboardActive}>
+          Dashboard
+        </SidebarItem>
+      </VStack>
+
+      <Spacer />
+    </VStack>
+  );
+
+  if (isMobile) {
+    return (
+      <Drawer isOpen={isOpen} placement="left" onClose={onClose}>
+        <DrawerOverlay>
+          <DrawerContent>
+            <DrawerCloseButton />
+            <DrawerBody p={0}>{SidebarContent}</DrawerBody>
+          </DrawerContent>
+        </DrawerOverlay>
+      </Drawer>
+    );
+  }
 
   return (
     <Box
@@ -61,34 +113,9 @@ export default function Sidebar() {
       borderColor="gray.200"
       borderRightWidth="1px"
       w="60"
+      display={{ base: "none", lg: "block" }}
     >
-      <VStack spacing={4} align="stretch">
-        <Box
-          py={4}
-          px={4}
-          bg="blue.500"
-          boxShadow="md"
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-        >
-          <Heading size="md" color="white" textAlign="center">
-            Bix Money
-          </Heading>
-        </Box>
-
-        <Box px={4}>
-          <UserCard name={user?.name || ""} isLoading={loading} />
-        </Box>
-
-        <VStack spacing="1" align="stretch" px={3}>
-          <SidebarItem icon={FiHome} isActive={!!isDashboardActive}>
-            Dashboard
-          </SidebarItem>
-        </VStack>
-
-        <Spacer />
-      </VStack>
+      {SidebarContent}
     </Box>
   );
 }

@@ -9,8 +9,8 @@ interface User {
 
 const mockUser: User = {
   id: "1",
-  name: "Guilherme Michels",
-  email: "a@a.com",
+  name: "Bix Tecnologia",
+  email: "bix@tecnologia.com",
 };
 
 export function useAuth() {
@@ -38,7 +38,7 @@ export function useAuth() {
   }, [checkAuth]);
 
   const login = async (email: string, password: string) => {
-    if (email === "a@a.com" && password === "teste123") {
+    if (email === "bix@tecnologia.com" && password === "bixtecnologia") {
       setUser(mockUser);
       localStorage.setItem("user", JSON.stringify(mockUser));
       await router.push("/dashboard");

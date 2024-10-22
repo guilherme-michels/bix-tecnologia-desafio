@@ -1,7 +1,5 @@
 import {
-  Box,
   Button,
-  Flex,
   Menu,
   MenuButton,
   MenuItem,
@@ -58,29 +56,35 @@ export function DashboardFilter({
       <MenuButton
         as={Button}
         rightIcon={<FaChevronDown />}
-        background={"white"}
-        border={"1px"}
-        borderColor={"blackAlpha.200"}
+        background="white"
+        border="1px"
+        borderColor="blackAlpha.200"
+        width="100%"
+        height="100%"
+        fontSize={{ base: "xs", md: "sm" }}
+        px={2}
+        py={0}
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
       >
         Filtros
       </MenuButton>
       <MenuList>
         {filterOptions.map((filter) => (
-          <Box key={filter.label}>
+          <React.Fragment key={filter.label}>
             {filter.options.map((option) => (
               <MenuItem
                 key={option}
                 onClick={() => handleFilterClick(filter.label, option)}
-                fontSize={"sm"}
+                fontSize={{ base: "xs", md: "sm" }}
               >
-                <Flex alignItems="center">
-                  {option === "Depósito" && <FiArrowUpCircle color="green" />}
-                  {option === "Saque" && <FiArrowDownCircle color="red" />}
-                  <Text ml={2}>{option}</Text>
-                </Flex>
+                {option === "Depósito" && <FiArrowUpCircle color="green" />}
+                {option === "Saque" && <FiArrowDownCircle color="red" />}
+                <Text ml={2}>{option}</Text>
               </MenuItem>
             ))}
-          </Box>
+          </React.Fragment>
         ))}
       </MenuList>
     </Menu>

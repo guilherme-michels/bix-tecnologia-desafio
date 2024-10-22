@@ -12,6 +12,7 @@ import {
   TagCloseButton,
   TagLabel,
   Text,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import { RangeDatepicker } from "chakra-dayzed-datepicker";
 import { format } from "date-fns";
@@ -40,6 +41,7 @@ export function DashboardHeader({
   const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>(
     {},
   );
+  const isMobile = useBreakpointValue({ base: true, md: false });
 
   useEffect(() => {
     const startDate = searchParams?.get("startDate");
@@ -117,43 +119,71 @@ export function DashboardHeader({
 
   return (
     <Box mb="6">
-      <Flex align="center" justify="space-between" mb="4">
-        <Flex align="center">
+      <Flex
+        direction={{ base: "column", sm: "row" }}
+        align={{ base: "flex-start", sm: "center" }}
+        justify="space-between"
+        mb="4"
+        wrap="wrap"
+      >
+        <Flex align="center" mb={{ base: 4, sm: 0 }}>
           <Box w="10px" h="10px" borderRadius="full" bg="green.400" mr="3" />
-          <Heading fontSize={24}>Dashboard</Heading>
+          <Heading fontSize={{ base: 20, md: 24 }}>Dashboard</Heading>
         </Flex>
-        <Flex align="center">
-          <RangeDatepicker
-            selectedDates={selectedDates}
-            onDateChange={handleDateChange}
-            configs={{
-              dateFormat: "dd/MM/yyyy",
-              dayNames: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
-              monthNames: [
-                "Janeiro",
-                "Fevereiro",
-                "Março",
-                "Abril",
-                "Maio",
-                "Junho",
-                "Julho",
-                "Agosto",
-                "Setembro",
-                "Outubro",
-                "Novembro",
-                "Dezembro",
-              ],
-              firstDayOfWeek: 0,
-            }}
-            propsConfigs={{
-              inputProps: {
-                placeholder: "Selecione as datas",
-                size: "sm",
-              },
-            }}
-          />
-
-          <Box ml={2}>
+        <Flex
+          width={{ base: "100%", sm: "auto" }}
+          justify="flex-end"
+          align="stretch"
+        >
+          <Box width={{ base: "70%", sm: "200px" }} mr={4}>
+            <RangeDatepicker
+              selectedDates={selectedDates}
+              onDateChange={handleDateChange}
+              configs={{
+                dateFormat: "dd/MM/yyyy",
+                dayNames: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
+                monthNames: [
+                  "Janeiro",
+                  "Fevereiro",
+                  "Março",
+                  "Abril",
+                  "Maio",
+                  "Junho",
+                  "Julho",
+                  "Agosto",
+                  "Setembro",
+                  "Outubro",
+                  "Novembro",
+                  "Dezembro",
+                ],
+                firstDayOfWeek: 0,
+              }}
+              propsConfigs={{
+                inputProps: {
+                  placeholder: "Selecione as datas",
+                  size: "sm",
+                  width: "100%",
+                },
+                dateNavBtnProps: {
+                  colorScheme: "blue",
+                  variant: "outline",
+                },
+                dayOfMonthBtnProps: {
+                  defaultBtnProps: {
+                    borderColor: "blue.300",
+                    _hover: {
+                      background: "blue.400",
+                    },
+                  },
+                  selectedBtnProps: {
+                    background: "blue.500",
+                    color: "white",
+                  },
+                },
+              }}
+            />
+          </Box>
+          <Box width={{ base: "30%", sm: "100px" }}>
             <DashboardFilter
               activeFilters={activeFilters}
               onFilterChange={handleFilterChange}
@@ -164,19 +194,19 @@ export function DashboardHeader({
       {(Object.keys(activeFilters).length > 0 ||
         selectedDates.length === 2) && (
         <Flex align="center" mt={2} mb={4} flexWrap="wrap">
-          <Text fontSize={"sm"} mr={2} mb={2}>
+          <Text fontSize="xs" mr={2} mb={2}>
             Filtrando por:
           </Text>
           <Flex flexWrap="wrap">
             {selectedDates.length === 2 && (
               <Tag
-                size="md"
+                size="sm"
                 borderRadius="full"
                 variant="solid"
                 colorScheme="blue"
                 mr={2}
                 mb={2}
-                fontSize={"xs"}
+                fontSize="xs"
               >
                 <TagLabel>Período: {formatDateRange(selectedDates)}</TagLabel>
                 <TagCloseButton onClick={() => removeFilter("date", "")} />
@@ -186,13 +216,13 @@ export function DashboardHeader({
               values.map((value) => (
                 <Tag
                   key={`${key}-${value}`}
-                  size="md"
+                  size="sm"
                   borderRadius="full"
                   variant="solid"
                   colorScheme="blue"
                   mr={2}
                   mb={2}
-                  fontSize={"xs"}
+                  fontSize="xs"
                 >
                   <TagLabel>{`${filterLabels[key] || key}: ${filterLabels[value] || value}`}</TagLabel>
                   <TagCloseButton onClick={() => removeFilter(key, value)} />
@@ -211,8 +241,8 @@ export function DashboardHeader({
         }
       >
         <TabList>
-          <Tab>Visão Geral</Tab>
-          <Tab>Transações</Tab>
+          <Tab fontSize={{ base: "sm", md: "md" }}>Visão Geral</Tab>
+          <Tab fontSize={{ base: "sm", md: "md" }}>Transações</Tab>
         </TabList>
         <TabIndicator mt="-1.5px" height="2px" bg="black" borderRadius="1px" />
       </Tabs>

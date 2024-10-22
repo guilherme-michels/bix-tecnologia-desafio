@@ -52,14 +52,15 @@ const TransactionSkeleton = () => (
     justify="space-between"
     align="center"
     py={2}
-    px={3}
+    px={{ base: 2, md: 3 }}
     borderRadius="md"
     borderColor="blackAlpha.200"
     borderWidth={1}
-    height="100px"
+    height={{ base: "80px", md: "100px" }}
+    flexDirection={{ base: "column", md: "row" }}
   >
     <HStack spacing={3}>
-      <Skeleton width="30px" height="30px" borderRadius="md" />
+      <Skeleton width="24px" height="24px" borderRadius="md" />
       <VStack align="start" spacing={0}>
         <Skeleton height="18px" width="80px" />
         <Skeleton height="14px" width="100px" mt={1} />
@@ -77,16 +78,17 @@ const TransactionItem = ({ transaction }: { transaction: Transaction }) => (
     justify="space-between"
     align="center"
     py={2}
-    px={3}
+    px={{ base: 2, md: 3 }}
     borderRadius="md"
     borderColor="blackAlpha.200"
     borderWidth={1}
-    height="100px"
+    height={{ base: "80px", md: "100px" }}
+    flexDirection={{ base: "column", md: "row" }}
   >
-    <HStack spacing={3}>
+    <HStack spacing={3} mb={{ base: 2, md: 0 }}>
       <Box
-        width="30px"
-        height="30px"
+        width={{ base: "24px", md: "30px" }}
+        height={{ base: "24px", md: "30px" }}
         borderRadius="md"
         bg={
           transaction.transaction_type === "deposit" ? "green.100" : "red.100"
@@ -104,25 +106,25 @@ const TransactionItem = ({ transaction }: { transaction: Transaction }) => (
       <VStack align="start" spacing={0}>
         <Text
           fontWeight="medium"
-          fontSize="sm"
+          fontSize={{ base: "xs", md: "sm" }}
           color={
             transaction.transaction_type === "deposit" ? "green.500" : "red.500"
           }
         >
           {formatCurrency(transaction.amount, transaction.currency)}
         </Text>
-        <Text fontSize="xs" color="gray.600" mt={1}>
+        <Text fontSize={{ base: "2xs", md: "xs" }} color="gray.600" mt={1}>
           {transaction.account}
         </Text>
       </VStack>
     </HStack>
-    <VStack align="end" spacing={2}>
-      <Text fontSize="xs" color="gray.600">
+    <VStack align={{ base: "start", md: "end" }} spacing={2}>
+      <Text fontSize={{ base: "2xs", md: "xs" }} color="gray.600">
         {formatDate(transaction.date)}
       </Text>
       <Badge
         colorScheme="blackAlpha"
-        fontSize="2xs"
+        fontSize={{ base: "3xs", md: "2xs" }}
         px={1}
         border={"1px"}
         borderColor={"blackAlpha.200"}
@@ -174,12 +176,12 @@ export function TransactionsListCard({
       border="1px"
       borderColor="gray.200"
       borderRadius="lg"
-      p="4"
-      height="550px"
+      p={{ base: 3, md: 4 }}
+      height={{ base: "400px", md: "550px" }}
       display="flex"
       flexDirection="column"
     >
-      <Text fontSize="xl" fontWeight="bold" mb={2}>
+      <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" mb={2}>
         Transações
       </Text>
       {isLoading && transactions.length === 0 ? (
