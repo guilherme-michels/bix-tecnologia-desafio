@@ -19,19 +19,13 @@ import { useAuth } from "../hooks/useAuth";
 
 interface UserCardProps {
   name: string;
-  email: string;
   avatarUrl?: string;
-  onMyAccount: () => void;
-  onLogout: () => void;
   isLoading?: boolean;
 }
 
 export default function UserCard({
   name,
-  email,
   avatarUrl,
-  onMyAccount,
-  onLogout,
   isLoading = false,
 }: UserCardProps) {
   const { user, logout } = useAuth();
@@ -94,9 +88,6 @@ export default function UserCard({
           </MenuButton>
           <Portal>
             <MenuList zIndex={9999} minW="100px" p={0}>
-              <MenuItem icon={<FiUser />} onClick={onMyAccount} fontSize={13}>
-                Minha conta
-              </MenuItem>
               <MenuItem
                 icon={<FiLogOut />}
                 onClick={handleLogout}

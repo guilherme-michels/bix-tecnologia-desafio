@@ -51,6 +51,7 @@ export function getTotalTransactionsCount(
 export function loadAllTransactions(
   startDate?: number,
   endDate?: number,
+  transactionTypes?: string[],
 ): Transaction[] {
   let filteredTransactions = transactionsData as Transaction[];
 
@@ -63,6 +64,12 @@ export function loadAllTransactions(
   if (endDate) {
     filteredTransactions = filteredTransactions.filter(
       (t: Transaction) => t.date <= endDate,
+    );
+  }
+
+  if (transactionTypes && transactionTypes.length > 0) {
+    filteredTransactions = filteredTransactions.filter((t: Transaction) =>
+      transactionTypes.includes(t.transaction_type),
     );
   }
 

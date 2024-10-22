@@ -22,8 +22,8 @@ interface MoneyFlowProps {
 
 export function MoneyFlow({ data = [] }: MoneyFlowProps) {
   const searchParams = useSearchParams();
-  const startDateParam = searchParams.get("startDate");
-  const endDateParam = searchParams.get("endDate");
+  const startDateParam = searchParams?.get("startDate");
+  const endDateParam = searchParams?.get("endDate");
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -100,6 +100,16 @@ export function MoneyFlow({ data = [] }: MoneyFlowProps) {
     });
   }, [data, startDate, endDate]);
 
+  const customTickFormatter = (tick: string) => {
+    if (
+      tick === chartData[0].date ||
+      tick === chartData[chartData.length - 1].date
+    ) {
+      return tick;
+    }
+    return tick;
+  };
+
   return (
     <Box
       border="1px"
@@ -140,13 +150,20 @@ export function MoneyFlow({ data = [] }: MoneyFlowProps) {
           margin={{
             top: 20,
             right: 40,
-            left: 0,
+            left: 20,
             bottom: 20,
           }}
         >
-          <XAxis dataKey="date" axisLine={false} tickLine={false} dy={10} />
+          <XAxis
+            dataKey="date"
+            axisLine={false}
+            tickLine={false}
+            dy={10}
+            tickFormatter={customTickFormatter}
+            interval="preserveStartEnd"
+          />
           <Tooltip
-            formatter={formatCurrency}
+            formatter={(value, name) => [formatCurrency(value as number), name]}
             labelStyle={{ fontWeight: "bold" }}
             contentStyle={{
               borderRadius: "8px",

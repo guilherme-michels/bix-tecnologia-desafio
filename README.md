@@ -1,4 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Requisitos:
+
+Página de login e uma Página da Dashboard protegida pelo Login;
+
+Filtros globais e dinâmicos e todo o conteúdo da página deve ser atualizado conforme os filtros aplicados;
+
+Cards resumindo receitas, despesas, transações pendentes e saldo total;
+
+Gráficos de barras empilhadas e Gráficos de linhas para visualização de transações, fica a seu critério quais dados trazer para estas visualizações;
+
+Capacidade de filtrar transações por datas, contas, indústrias e estado;
+
+Sidebar exclusiva para a página da Dashboard com opções de Logout e Home;
+
+Persista a sessão e o valor do filtro sem um banco de dados;
+
+Design responsivo e interativo;
+
+Utilize Next.js e Typescript;
+
+Faça a estilização com styled-components;
+
+Inclua no README instruções de instalação do projeto e quaisquer observações relevantes;
+
+Utilizar como fonte de dados o conjunto de dados disponibilizado nesse e-mail.
+s
 
 ## Getting Started
 
@@ -34,3 +59,4 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+

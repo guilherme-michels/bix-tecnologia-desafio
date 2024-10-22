@@ -16,9 +16,7 @@ import {
   Thead,
   Tr,
 } from "@chakra-ui/react";
-import { useSearchParams } from "next/navigation";
 import type React from "react";
-import { useMemo, useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { FiAlertCircle } from "react-icons/fi";
 import { useTransactions } from "../../../hooks/useTransactions";
@@ -67,15 +65,17 @@ export const TransactionsTable: React.FC = () => {
       </InputGroup>
 
       <TableContainer>
-        <Table variant="simple" size="md">
+        <Table variant="simple" size="md" layout="fixed">
           <Thead>
             <Tr>
-              <Th>Data e Hora</Th>
-              <Th>Conta</Th>
-              <Th>Indústria</Th>
-              <Th>Tipo</Th>
-              <Th isNumeric>Valor</Th>
-              <Th>Estado</Th>
+              <Th width="20%">Data e Hora</Th>
+              <Th width="20%">Conta</Th>
+              <Th width="20%">Indústria</Th>
+              <Th width="10%">Tipo</Th>
+              <Th width="15%" isNumeric>
+                Valor
+              </Th>
+              <Th width="15%">Estado</Th>
             </Tr>
           </Thead>
           <Tbody>
@@ -108,15 +108,19 @@ export const TransactionsTable: React.FC = () => {
                 // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                 <Tr key={index}>
                   <Td>
-                    <Text fontSize="md">
+                    <Text fontSize="md" isTruncated>
                       {formatDateTime(transaction.date)}
                     </Text>
                   </Td>
                   <Td>
-                    <Text fontSize="md">{transaction.account}</Text>
+                    <Text fontSize="md" isTruncated>
+                      {transaction.account}
+                    </Text>
                   </Td>
                   <Td>
-                    <Text fontSize="md">{transaction.industry}</Text>
+                    <Text fontSize="md" isTruncated>
+                      {transaction.industry}
+                    </Text>
                   </Td>
                   <Td>
                     <Badge
@@ -140,12 +144,15 @@ export const TransactionsTable: React.FC = () => {
                           ? "green"
                           : "red"
                       }
+                      isTruncated
                     >
                       {formatCurrency(transaction.amount, transaction.currency)}
                     </Text>
                   </Td>
                   <Td>
-                    <Text fontSize="md">{transaction.state}</Text>
+                    <Text fontSize="md" isTruncated>
+                      {transaction.state}
+                    </Text>
                   </Td>
                 </Tr>
               ))
@@ -156,21 +163,24 @@ export const TransactionsTable: React.FC = () => {
 
       {!isLoading && displayedTransactions.length > 0 && (
         <Flex justifyContent="space-between" alignItems="center" mt={4}>
-          <Button
-            onClick={() => loadTransactionsPage(currentPage - 1)}
-            isDisabled={currentPage === 1}
-          >
-            Anterior
-          </Button>
           <Text>
             Página {currentPage} de {totalPages}
           </Text>
-          <Button
-            onClick={() => loadTransactionsPage(currentPage + 1)}
-            isDisabled={currentPage === totalPages}
-          >
-            Próxima
-          </Button>
+          <Flex>
+            <Button
+              onClick={() => loadTransactionsPage(currentPage - 1)}
+              isDisabled={currentPage === 1}
+              mr={2}
+            >
+              Anterior
+            </Button>
+            <Button
+              onClick={() => loadTransactionsPage(currentPage + 1)}
+              isDisabled={currentPage === totalPages}
+            >
+              Próxima
+            </Button>
+          </Flex>
         </Flex>
       )}
     </Box>

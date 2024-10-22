@@ -1,14 +1,12 @@
 import {
+  Box,
   Button,
-  Checkbox,
   Menu,
   MenuButton,
   MenuItem,
   MenuList,
-  Text,
-  VStack,
 } from "@chakra-ui/react";
-import React, { useState } from "react";
+import React from "react";
 import { FaChevronDown } from "react-icons/fa6";
 
 interface FilterOption {
@@ -19,60 +17,37 @@ interface FilterOption {
 
 const filterOptions: FilterOption[] = [
   {
-    label: "Tipo de Transação",
+    label: "transactionType",
     options: ["Depósito", "Saque"],
     valueMap: {
       Depósito: "deposit",
       Saque: "withdrawal",
     },
   },
-  {
-    label: "Moeda",
-    options: ["BRL", "USD"],
-  },
 ];
 
 interface DashboardFilterProps {
+  activeFilters: Record<string, string[]>;
   onFilterChange: (filters: Record<string, string[]>) => void;
 }
 
-export function DashboardFilter({ onFilterChange }: DashboardFilterProps) {
-  const [selectedFilters, setSelectedFilters] = useState<
-    Record<string, string[]>
-  >({});
+export function DashboardFilter({
+  activeFilters,
+  onFilterChange,
+}: DashboardFilterProps) {
+  const handleFilterClick = (category: string, option: string) => {
+    const updatedFilters = { ...activeFilters };
+    const filterOption = filterOptions.find((opt) => opt.label === category);
+    const mappedValue = filterOption?.valueMap?.[option] ?? option;
 
-  const handleFilterChange = (category: string, option: string) => {
-    setSelectedFilters((prevFilters) => {
-      const updatedFilters = { ...prevFilters };
-      if (!updatedFilters[category]) {
-        updatedFilters[category] = [];
-      }
-      const index = updatedFilters[category].indexOf(option);
-      if (index > -1) {
-        updatedFilters[category].splice(index, 1);
-      } else {
-        updatedFilters[category].push(option);
-      }
-      if (updatedFilters[category].length === 0) {
-        delete updatedFilters[category];
-      }
+    if (!updatedFilters[category]) {
+      updatedFilters[category] = [];
+    }
 
-      const mappedFilters = Object.entries(updatedFilters).reduce(
-        (acc, [key, values]) => {
-          const filterOption = filterOptions.find((opt) => opt.label === key);
-          if (filterOption?.valueMap) {
-            acc[key] = values.map((v) => filterOption.valueMap?.[v] ?? v);
-          } else {
-            acc[key] = values;
-          }
-          return acc;
-        },
-        {} as Record<string, string[]>,
-      );
-
-      onFilterChange(mappedFilters);
-      return updatedFilters;
-    });
+    if (!updatedFilters[category].includes(mappedValue)) {
+      updatedFilters[category] = [...updatedFilters[category], mappedValue];
+      onFilterChange(updatedFilters);
+    }
   };
 
   return (
@@ -82,26 +57,23 @@ export function DashboardFilter({ onFilterChange }: DashboardFilterProps) {
         rightIcon={<FaChevronDown />}
         background={"white"}
         border={"1px"}
-        borderColor={"blackAlpha.300"}
+        borderColor={"blackAlpha.200"}
       >
         Filtros
       </MenuButton>
       <MenuList>
         {filterOptions.map((filter) => (
-          <MenuItem key={filter.label} onClick={(e) => e.preventDefault()}>
-            <VStack align="start" spacing={2} width="100%">
-              <Text fontWeight="bold">{filter.label}</Text>
-              {filter.options.map((option) => (
-                <Checkbox
-                  key={option}
-                  isChecked={selectedFilters[filter.label]?.includes(option)}
-                  onChange={() => handleFilterChange(filter.label, option)}
-                >
-                  {option}
-                </Checkbox>
-              ))}
-            </VStack>
-          </MenuItem>
+          <Box key={filter.label}>
+            {filter.options.map((option) => (
+              <MenuItem
+                key={option}
+                onClick={() => handleFilterClick(filter.label, option)}
+                fontSize={"sm"}
+              >
+                {option}
+              </MenuItem>
+            ))}
+          </Box>
         ))}
       </MenuList>
     </Menu>

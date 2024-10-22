@@ -15,6 +15,7 @@ import {
   StatLabel,
   StatNumber,
 } from "@chakra-ui/react";
+import { useCallback } from "react";
 import { useTransactions } from "../../../hooks/useTransactions";
 import { MoneyFlow } from "./money-flow";
 import { RecentTransactions } from "./recent-transactions";
@@ -37,6 +38,10 @@ export function Overview() {
     moneyFlowData,
   } = useTransactions(true);
 
+  const formatValue = useCallback((value: number | null) => {
+    return value !== null ? formatCurrency(value) : "";
+  }, []);
+
   return (
     <Box>
       <SimpleGrid columns={{ base: 1, md: 3 }} spacing="6" mb="8">
@@ -57,9 +62,7 @@ export function Overview() {
             startColor="blackAlpha.100"
             endColor="blackAlpha.200"
           >
-            <StatNumber>
-              {formatCurrency(dashboardData.totalBalance)}
-            </StatNumber>
+            <StatNumber>{formatValue(dashboardData.totalBalance)}</StatNumber>
           </Skeleton>
         </Stat>
         <Stat
@@ -79,7 +82,7 @@ export function Overview() {
             startColor="blackAlpha.100"
             endColor="blackAlpha.200"
           >
-            <StatNumber>{formatCurrency(dashboardData.income)}</StatNumber>
+            <StatNumber>{formatValue(dashboardData.income)}</StatNumber>
           </Skeleton>
         </Stat>
         <Stat
@@ -99,7 +102,7 @@ export function Overview() {
             startColor="blackAlpha.100"
             endColor="blackAlpha.200"
           >
-            <StatNumber>{formatCurrency(dashboardData.expenses)}</StatNumber>
+            <StatNumber>{formatValue(dashboardData.expenses)}</StatNumber>
           </Skeleton>
         </Stat>
       </SimpleGrid>

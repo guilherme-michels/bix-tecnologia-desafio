@@ -1,23 +1,30 @@
 "use client";
 
 import { Box, Flex, Icon, Spacer, Text, VStack } from "@chakra-ui/react";
-import { FiDollarSign, FiHome, FiPieChart } from "react-icons/fi";
+import { usePathname } from "next/navigation";
+import { FiHome } from "react-icons/fi";
 import { useAuth } from "../hooks/useAuth";
 import UserCard from "./user-card";
 
 const SidebarItem = ({
   icon,
   children,
-}: { icon: React.ElementType; children: React.ReactNode }) => (
+  isActive,
+}: {
+  icon: React.ElementType;
+  children: React.ReactNode;
+  isActive: boolean;
+}) => (
   <Flex
     align="center"
     p="2"
     mx="2"
-    borderRadius="sm"
+    borderRadius="lg"
     as="fieldset"
     cursor="pointer"
+    bg={isActive ? "blackAlpha.200" : "transparent"}
     _hover={{
-      bg: "blackAlpha.100",
+      bg: isActive ? "blackAlpha.300" : "blackAlpha.100",
     }}
     transition="all 0.2s"
   >
@@ -28,6 +35,9 @@ const SidebarItem = ({
 
 export default function Sidebar() {
   const { user, logout, loading } = useAuth();
+  const pathname = usePathname();
+  // biome-ignore lint/complexity/useOptionalChain: <explanation>
+  const isDashboardActive = pathname && pathname.startsWith("/dashboard");
 
   return (
     <Box
@@ -53,19 +63,13 @@ export default function Sidebar() {
         </Box>
 
         <Box>
-          <UserCard
-            name={user?.name || ""}
-            email={user?.email || ""}
-            onMyAccount={() => console.log("Indo para Minha conta")}
-            onLogout={logout}
-            isLoading={loading}
-          />
+          <UserCard name={user?.name || ""} isLoading={loading} />
         </Box>
 
         <VStack spacing="1" align="stretch">
-          <SidebarItem icon={FiHome}>Dashboard</SidebarItem>
-          <SidebarItem icon={FiDollarSign}>Transações</SidebarItem>
-          <SidebarItem icon={FiPieChart}>Relatórios</SidebarItem>
+          <SidebarItem icon={FiHome} isActive={!!isDashboardActive}>
+            Dashboard
+          </SidebarItem>
         </VStack>
 
         <Spacer />

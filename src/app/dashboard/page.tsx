@@ -16,7 +16,6 @@ export default function DashboardPage() {
 
       {activeTab === "overview" && <Overview />}
       {activeTab === "transactions" && <TransactionsTable />}
-      {activeTab === "budget" && <Box>Conteúdo da aba Orçamento</Box>}
     </Box>
   );
 }
