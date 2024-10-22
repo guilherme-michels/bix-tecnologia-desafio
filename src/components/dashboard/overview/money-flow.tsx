@@ -131,7 +131,7 @@ export function MoneyFlow({ data = [] }: MoneyFlowProps) {
       boxShadow="sm"
       overflow="hidden"
       width="100%"
-      maxWidth="1200px"
+      maxWidth="1100px"
       mx="auto"
     >
       <Flex
